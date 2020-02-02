@@ -71,11 +71,45 @@ public:
             delete []_mem;
         }
     }
+    //清空元素
     void Clear(){
         _size = 0;
     }
 
+    //在数组末尾添加元素
+    void Push( T t){
+        TIXMLASSERT( _size < INT_MAX);
+        //检查空间容量
+        EnsureCapacity( _size+1 );
+        _mem[_size] = t;
+        ++_size;
+    }
 
+    //添加段
+    T* PushArr( int count){
+        TIXMLASSERT( count >= 0);
+        TIXMLASSERT( _size <= INI_MAX - count);
+        //检查并申请内存
+        EnsureCapacity( _size + count );
+        //添加段
+        T* ret = &_mem[_size];
+        _size += count;
+        //返回添加后的数组
+        return ret;
+    }
+
+    //返回并删除末尾元素
+    T Pop(){
+        TIXMLASSERT( _size > 0);
+        --_size;
+        return _mem[_size];
+    }
+
+    //删除段
+    void PopArr( int count){
+        TIXMLASSERT( _size >= count);
+        _size -= count;
+    }
 
 private:
     //code
