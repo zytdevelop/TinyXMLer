@@ -111,6 +111,17 @@ public:
         _size -= count;
     }
 
+    //判断是否为空
+    bool Empty() const{
+        return _size == 0;
+    }
+
+    //重载下标符
+    T& operator[](int i){
+        TIXMLASSERT( i >= 0 && i< _size );
+        return _mem[i];
+    }
+
 private:
     //code
     T* _mem;
