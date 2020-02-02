@@ -62,6 +62,19 @@ template <class T, int INIITAL_SIZE>
 class DynArray{  //动态存储数据
 public:
     //code
+    //构造函数
+    DynArray():_mem(_pool), _allocated( INITIAL_SIZE), _size(0){}
+
+    //析构函数
+    ~DynArray(){
+        if(_mem != _pool){
+            delete []_mem;
+        }
+    }
+    void Clear(){
+        _size = 0;
+    }
+
 
 
 private:
@@ -70,6 +83,33 @@ private:
     T _pool[INITIAL_SIZE];    //内存池
     int _allocated;    //分配器
     int _size;    //元素数量
+
+    //拷贝构造和赋值重载
+    DynArray(const DynArray& );    //不需要实现
+    void operator=( const DynArray&);    //不需要实现
+    void EnsureCapacity( int cap ){
+        //确定cap大于零
+        TIXMLASSERT( cap > 0);
+
+        //如果内存池已满，则申请空间
+        if( cap > _allocated ){
+            TIXMLASSERT( cap <= INT_MAX / 2);
+
+            //申请新的内存池来接收，每次申请两倍空间
+            int newAllocated = cap * 2;
+            T* newMem = new T[newAllocated];
+            TIXMLASSERT(newAllocated >= _size);
+
+            //替换数据
+            memcpy( newMem, _mem, sizeof(T)* _size);
+
+            //释放 _mem
+            if(_mem != _pool){
+                delete []_mem;
+            }
+            _mem = newMem;
+            _allocated = newAllocated;
+    }
 };
 
 
