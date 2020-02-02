@@ -58,7 +58,19 @@ namespace tinyxml2{
     };
 
     //code
-}
+template <class T, int INIITAL_SIZE>
+class DynArray{  //动态存储数据
+public:
+    //code
+
+
+private:
+    //code
+    T* _mem;
+    T _pool[INITIAL_SIZE];    //内存池
+    int _allocated;    //分配器
+    int _size;    //元素数量
+};
 
 
 
