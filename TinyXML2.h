@@ -58,6 +58,33 @@ namespace tinyxml2{
     };
 
     //code
+
+//父虚类,辅助快速的分配和释放内存，只作继承所以不用实现
+class MemPool
+{
+public:
+    MemPool(){}
+    virtual ~MemPool(){}
+
+    //纯虚函数
+    virtual int ItemSize() const = 0;
+    virtual void* Alloc() = 0;
+    virtual void Free(void*) = 0;
+    virtual void SetTracked() = 0;
+};
+
+
+//内存池子类，用于创建符合大小要求的内存池
+template< int ITEM_SIZE>
+class MemPoolT : public MemPool{
+public:
+    //code
+
+private:
+    //code
+
+
+};
 template <class T, int INIITAL_SIZE>
 class DynArray{  //动态存储数据
 public:
