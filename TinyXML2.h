@@ -79,49 +79,49 @@ template< int ITEM_SIZE>
 class MemPoolT : public MemPool{
 public:
     //code
-    //
+    //定义每个块的大小
     enum { ITEMS_PER_BLOCK = (4 * 1024) / ITEM_SIZE};
-    
-    //
+
+    //构造函数和析构函数
     MemPoolT() : _blockPtrs(), _root(0), _currentAllocs(0), nAllocs(0), _maxAllocs(0), _nUntracked(0){}
     ~MemPoolT(){
         MemPoolT< ITEM_SIZE >::Clear();
     }
-    
-    //
+
+    //清空内存
     void Clear(){
-        //
+        //删除块
         while( !_blockPtrs.Empty()){
             Block* lastBlock = _blockPtrs.Pop();
             delete lastBlock;
         }
-        
-        //
+
+        //初始化
         _root = 0;
         _currentAllocs = 0;
         _nAllocs = 0;
         _maxAllocs = 0;
         _nUntracked = 0;
     }
-    
-    //
+
+    //内存块数
     virtual int ItemSize() const {
         return ITEM_SIZE;
     }
-    
-    //
+
+    //当前分配数
     int CurrentAllocs() const {
         return _currentAllocs;
     }
-    
-    //
+
+    //分配器
     virtual void* Alloc() {
         if( !_root ){
-            //
+            //需要一个新的块
             Block* block = new Block();
             _blockPtrs.Push( block );
-            
-            //
+
+            //把块的内容复制到节点
             Item* blockItems = block->items;
             for(int i = 0; i < ITEMS_PER_BLOCK - 1; ++i){
                 blockItems[i].next = &(blockItems[i + 1];
@@ -129,14 +129,14 @@ public:
             blockItems[ITEMS_PER_BLOCK - 1].next = 0;
             _root = blockItems;
         }
-        
-        //
+
+        //设置结果为常量
         Item* const result = _root;
         TIXMLASSERT( result != 0 );
         _root = _root->next;
-        
-        
-        //
+
+
+        //更新状态
         ++_currentAllocs;
         if( _currentAllocs > _maxAllocs ){
             _maxAllocs = _currentAllocs;
@@ -145,67 +145,71 @@ public:
         ++_nUntracked;
         return result;
     }
-    
-    //
+
+    //释放内存
     virtual void Free( void* mem){
-        //
+        //为空，返回
         if( !mem ){
             return;
         }
-        
-        //
+
+        //当前分配数
         --_currentAllocs;
-        //
+        //强制转化为空间节点类型
         Item* item = static_cast<Item*>( mem );
-        //
+        //如果采用DEBUG调试，item全设置为0xfe
     #ifdef TINYXML2_DEBUG
         memset( item, 0xfe, sizeof( *item ) );
     #endif
-        //
+        //清空item
         item->next = _root;
         _root = item;
     }
-    
-    //  
+
+    //  跟踪状态信息
+    //  打印当前所有状态信息
     void Trace( const char* name ){
         printf("Mempool %s watermark=%d [%dk] current=%d size=%d nAlloc=%d blocks=%d\n", name, _maxAllocs * ITEM_SIZE / 1024, _currentAllocs, ITEM_SIZE, _nAllocs, _blockPtrs.Size());
     }
-    
-    //
+
+    //更新跟踪状态
     void SetTracked(){
         --_nUntracked;
     }
-    
-    //
+
+    //返回跟踪状态
     int Untracked() const {
         return _nUntracked;
     }
-     
-    
+
+
 private:
     //code
-    MemPoolT( const MemPoolT& );
-    void operator=( const MemPoolT& );
-    
+    MemPoolT( const MemPoolT& );   //不实现
+    void operator=( const MemPoolT& );    //不实现
+
+
+    //空间节点联合体
     union Item{
         Item* next;
         char itemData[ITEM_SIZE];
     };
+    //内存块结构体
     struct Block{
         Item items[ITEM_PER_BLOCK];
     };
-    
-    //
+
+    //定义一个动态数组
     DynArray< Block*, 10> _blockPtrs;
-    
-    //
+
+    //定义根节点
     Item* _root;
-    
-    
-    int _currentAllocs;     //
-    int _nAllocs;           //
-    int _maxAllocs;         //
-    int _nUntracked;        //
+
+
+    int _currentAllocs;     //当前分配数
+    int _nAllocs;           //分配总次数
+    int _maxAllocs;         //最大分配数
+    int _nUntracked;        //未跟踪次数
 
 };
 template <class T, int INIITAL_SIZE>
