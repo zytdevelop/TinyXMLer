@@ -122,6 +122,45 @@ public:
         return _mem[i];
     }
 
+    //查看末尾元素
+    const T& PeekTop(){
+        TIXMLASSERT( _size > 0 );
+        return _mem[_size - 1];
+    }
+
+    //元素数量
+    int Size() const {
+        TIXMLASSERT( _size >= 0);
+        return _size;
+    }
+
+    //空间容量
+    int Capacity() const {
+        TIXMLASSERT( _allocated >= INITIAL_SIZE );
+        return _size;
+    }
+
+    //交换删除
+    //将需要删除的元素与末尾元素交换，然后删除
+    void SwapRemove(int i){
+        TIXMLASSERT(i >= 0 && i < _size);
+        TIXMLASSERT(_size > 0);
+        _mem[i] = _mem[_size - 1];
+        --_size;
+    }
+
+    //返回数组元素
+    T* Mem(){
+        TIXMLASSERT( _mem );
+        return _mem;
+    }
+
+    const T* Mem() const {
+        TIXMLASSERT( _mem );
+        return _mem;
+    }
+
+
 private:
     //code
     T* _mem;
