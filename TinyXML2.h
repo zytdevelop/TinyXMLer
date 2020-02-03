@@ -79,10 +79,133 @@ template< int ITEM_SIZE>
 class MemPoolT : public MemPool{
 public:
     //code
-
+    //
+    enum { ITEMS_PER_BLOCK = (4 * 1024) / ITEM_SIZE};
+    
+    //
+    MemPoolT() : _blockPtrs(), _root(0), _currentAllocs(0), nAllocs(0), _maxAllocs(0), _nUntracked(0){}
+    ~MemPoolT(){
+        MemPoolT< ITEM_SIZE >::Clear();
+    }
+    
+    //
+    void Clear(){
+        //
+        while( !_blockPtrs.Empty()){
+            Block* lastBlock = _blockPtrs.Pop();
+            delete lastBlock;
+        }
+        
+        //
+        _root = 0;
+        _currentAllocs = 0;
+        _nAllocs = 0;
+        _maxAllocs = 0;
+        _nUntracked = 0;
+    }
+    
+    //
+    virtual int ItemSize() const {
+        return ITEM_SIZE;
+    }
+    
+    //
+    int CurrentAllocs() const {
+        return _currentAllocs;
+    }
+    
+    //
+    virtual void* Alloc() {
+        if( !_root ){
+            //
+            Block* block = new Block();
+            _blockPtrs.Push( block );
+            
+            //
+            Item* blockItems = block->items;
+            for(int i = 0; i < ITEMS_PER_BLOCK - 1; ++i){
+                blockItems[i].next = &(blockItems[i + 1];
+            }
+            blockItems[ITEMS_PER_BLOCK - 1].next = 0;
+            _root = blockItems;
+        }
+        
+        //
+        Item* const result = _root;
+        TIXMLASSERT( result != 0 );
+        _root = _root->next;
+        
+        
+        //
+        ++_currentAllocs;
+        if( _currentAllocs > _maxAllocs ){
+            _maxAllocs = _currentAllocs;
+        }
+        ++_nAllocs;
+        ++_nUntracked;
+        return result;
+    }
+    
+    //
+    virtual void Free( void* mem){
+        //
+        if( !mem ){
+            return;
+        }
+        
+        //
+        --_currentAllocs;
+        //
+        Item* item = static_cast<Item*>( mem );
+        //
+    #ifdef TINYXML2_DEBUG
+        memset( item, 0xfe, sizeof( *item ) );
+    #endif
+        //
+        item->next = _root;
+        _root = item;
+    }
+    
+    //  
+    void Trace( const char* name ){
+        printf("Mempool %s watermark=%d [%dk] current=%d size=%d nAlloc=%d blocks=%d\n", name, _maxAllocs * ITEM_SIZE / 1024, _currentAllocs, ITEM_SIZE, _nAllocs, _blockPtrs.Size());
+    }
+    
+    //
+    void SetTracked(){
+        --_nUntracked;
+    }
+    
+    //
+    int Untracked() const {
+        return _nUntracked;
+    }
+     
+    
 private:
     //code
-
+    MemPoolT( const MemPoolT& );
+    void operator=( const MemPoolT& );
+    
+    union Item{
+        Item* next;
+        char itemData[ITEM_SIZE];
+    };
+    struct Block{
+        Item items[ITEM_PER_BLOCK];
+    };
+    
+    //
+    DynArray< Block*, 10> _blockPtrs;
+    
+    //
+    Item* _root;
+    
+    
+    int _currentAllocs;     //
+    int _nAllocs;           //
+    int _maxAllocs;         //
+    int _nUntracked;        //
 
 };
 template <class T, int INIITAL_SIZE>
