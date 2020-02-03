@@ -212,6 +212,56 @@ namespace tinyxml2{
         int _nUntracked;        //未跟踪次数
 
     };
+
+    //定义访问接口
+    class TINYXML2_LIB XMLVisitor{
+    public:
+        //code
+        //此类中的函数全是用虚函数，不需要构造函数
+        virtual ~XMLVisitor(){}
+
+        //进入
+        virtual bool VisitEnter( const XMLDocument& ){
+            return true;
+        }
+        virtual bool VisitEnter( const XMLElement&, const XMLAttribute* ){
+            return true;
+        }
+        //退出
+        virtual bool VisitExit( const XMLDocument& ){
+            return true;
+        }
+        virtual bool VisitExit( const XMLElement& ){
+            return true;
+        }
+
+        //访问声明
+        virtual bool Visit( const XMLDeclaration& ){
+            return true;
+        }
+
+        //访问文本节点
+        virtual bool Visit( const XMLText& ){
+            return true;
+        }
+
+        //访问注释
+        virtual bool Visit( const XMLComment& ){
+            return true;
+        }
+
+        //访问未知节点
+        virtual bool Visit( const XMLUnknow& ){
+            return true;
+        }
+
+        //
+    };
+
+
+
+
+    }
     template <class T, int INIITAL_SIZE>
     class DynArray{  //动态存储数据
     public:
