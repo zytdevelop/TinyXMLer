@@ -184,4 +184,51 @@ const char*XMLUtil::GetCharacterRef( const char* p, char* value,int* length)
             while( *q != 'x'){
                 unsigned int digit = 0;
 
+                if( *q >= '0' && *q <= '9' ){
+                    digit = *q - '0';
+                }
+                else if( *q >= 'a' && *q <= 'f' ){
+                    digit = *q - 'a' + 10;
+                }
+                else if( *q >= 'A' && *q <= 'F' ){
+                    digit = *q - 'A' + 10;
+                }
+                else {
+                    return 0;
+                }
+
+                //确认digit为十六进制
+                TIXMLASSERT( digit < 16 );
+                TIXMLASSERT( digit == 0 || mult <= UINT_MAX / digit );
+
+                //转化为ucs
+                const unsigned int digitScaled = mult * digit;
+                TIXMLASEERT( ucs <= ULONG_MAX - digitScaled );
+                ucs += digitScaled;
+                TIXMLASSERT( mult <= UINT_MAX /16 );
+                mult *= 16;
+                --q;
+            }
+        }
+        //*(p+2) != 'x'说明十进制
+        else{
+            const char* q = p+2;
+            if( !(*q) ){
+                return 0;
+            }
+            //指向末尾
+            q = strchr( q, SEMECOLON );
+
+            if( !q ){
+                return 0;
+            }
+            TIXMLASSERT( *q == SEMICOLON );
+
+            delta = p - q;
+            --q;
+
+            //解析
+            while( *q != '#' ){
+                if( *q >= '0' && *q <= '9' ){
+                    const unsigned int digit = *q - '0';
 
