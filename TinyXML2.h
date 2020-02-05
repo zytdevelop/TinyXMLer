@@ -58,6 +58,75 @@ namespace tinyxml2{
     };
 
     //code
+    class TINYXML_LIB_XMLUtil{
+    public:
+        //code
+       static void SetBoolSerialization(const char* writeTrue, const char* writeFalse);
+
+       //判断编码格式
+       //本程序以UTF-8为基础
+       inline static bool IsUTF8Continuation(char p){
+           return (p & 0x80 ) != 0;
+       }
+
+       //判断空白
+       //需要用到<ctype> isspace(),功能是:如果参数是除字母、数字和空格外可打印字符
+       //函数返回非零，否则返回零
+       static bool IsWhiteSpace( char p ){
+           return !IsUTF8Continuation(p) && isspace( static_cast<unsigned char>(p) );
+       }
+
+
+       //跳过空白
+       static const char* SkipWhiteSpace( const char* p, int* curLineNumPtr ){
+           //确定参数不为空
+           TIXMLASSERT( p );
+
+           //如果是空白,则需考虑换行
+           while( IsWhiteSpace(*p) ){
+               if(curLineNumptr && *p == '\n'){
+                   ++(*curLineNumptr);
+               }
+               ++p;
+           }
+           TIXMLASSERT( p );
+           return p;
+       }
+
+
+       //跳过空白
+       static char* SkipWhiteSpace( char* p, int* curLineNumPtr ){
+           //结果类型和参数强制转换为常量
+           return const_cast<char*>( SkipWhiteSpace( const_cast<const char*>(p), curLineNumPtr ) );
+       }
+
+       //判断名称首位
+       /* XML元素命名规则:
+        * 可以包含字母、数字及其它字母
+        * 不能以数字开头或下划线开头
+        * 不能用XML开头
+        * 不能包含空格和冒号
+        */
+       inline static bool IsNameStartChar( unsigned char ch ){
+           if( ch >= 128 ){
+               return true;
+           }
+           if( isalpha( ch ) ){
+               return true;
+           }
+           return ch == ':' || ch == '_';
+       }
+
+
+
+
+    private:
+        //code
+        static const char* writeBoolTrue;
+        static const char* writeBoolFalse;
+
+    };
+
 
     //父虚类,辅助快速的分配和释放内存，只作继承所以不用实现
     class MemPool

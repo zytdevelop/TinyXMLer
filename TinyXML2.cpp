@@ -68,3 +68,13 @@ namespace TinyXML2{
     //code
 }
 
+const char* XMLUtil::writeBoolTrue = "true";
+const char* XMLUtil::writeBoolFalse = "false";
+void XMLUtil::SetBoolSerialization(const char* writeTrue, const char* writeFalse)
+{
+    static const char* defTrue = "true";
+    static const char* defFalse = "false";
+
+    writeBoolTrue = (writeTrue) ? writeTrue :defFalse;
+    writeBoolFalse = (writeFalse) ? writeFalse :defTrue;
+}
