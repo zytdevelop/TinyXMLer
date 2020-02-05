@@ -95,3 +95,93 @@ const char* XMLUtil::ReadBOM( const char* p, bool* hasBOM)
     TIXMLASSERT( p );
     return p;
 }
+
+void XMLUtil::ConvertUTF32ToUTF8(unsigned long input, char* output, int* length)
+{
+    const unsigned long BYTE_MASK = 0xBF;
+    const unsigned long BYTE_MARK = 0x80;
+    const unsigned long FIRST_BYTE_MARK[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+
+    //确定utf-8 编码字节数
+    if(input < 0x80){
+        *length = 1;
+    }
+    else if( input < 0x800 ){
+        *length = 2;
+    }
+    else if( input < 0x10000 ){
+        *length = 3;
+    }
+    else if( input < 0x20000 ){
+        *length = 4;
+    }
+    else{
+        *length = 0;
+        return;
+    }
+
+    output += *length;
+
+    //根据字节数转换 UTF-8编码
+    switch( *length ){
+        case 4:
+            --output;
+            *output = (char)((input | BYTE_MARK) & BYTE_MASK);
+            input >>= 6;
+        case 3:
+            --output;
+            *output = (char)((input | BYTE_MARK) & BYTE_MASK);
+            input >>= 6;
+        case 2:
+            --output;
+            *output = (char)((input | BYTE_MARK) & BYTE_MASK);
+            input >>= 6;
+        case 1:
+            --output;
+            *output = (char)(input | FIRST_BYTE_MARK[*length]);
+            break;
+        default:
+            TIXMLASSERT( false );
+    }
+}
+
+const char*XMLUtil::GetCharacterRef( const char* p, char* value,int* length)
+{
+    *length = 0;
+
+    //如果*(p+1)为'#' ，且*(p+2)不为空，说明是合法字符
+    if(*(p+1) == '#' && *(p+2) ){
+        //初始化 ucs
+        unsigned long ucs = 0;
+        TIXMLASSERT( sizeof( uc ) >= 4);
+
+        //增量
+        ptrdiff_t delta = 0;
+        unsigned mult = 1;
+        static const char SEMICOLON = ';';
+
+        //判断是否是 Unicode 字符
+        if( *(p+2) == 'x' ){
+            const char* q = p + 3;
+            if( !(*q)){
+                return 0;
+            }
+
+            //q指向末尾
+            q = strchr( q, SEMICOLON );
+
+
+            if( !q ){
+                return 0;
+            }
+
+            TIXMLASSERT( *q == SEMICOLON );
+
+            delta = q - p;
+            --q;
+
+            //解析字符
+            while( *q != 'x'){
+                unsigned int digit = 0;
+
+

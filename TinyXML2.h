@@ -138,6 +138,17 @@ namespace tinyxml2{
 
        //验证编码方式
        static const char* ReadBOM( const char* p, bool* hasBOM );
+       //UCS转UTF-8
+       //将UCS4编码转换成UTF8编码，首先根据UCS4 编码范围确定对应的UTF8编码字节数
+       static void ConvertUTF32ToUTF8( unsigned long input, char* output, int* length);
+
+       //获取字符特征
+       //合法字符：
+       // #x9（水平制表符）、#xA（回车符）、#xD（换行符）、
+       // #x20-#xD7FF、#xE000-#xFFFD、#x10000 - #x10FFFF，
+       // 即任何Unicode字符
+       // p是字符串的起始位置，value用于存储 UTF-8 格式
+       static const char* GetCharacterRef( const char* p, char* value, int* length );
 
 
 
