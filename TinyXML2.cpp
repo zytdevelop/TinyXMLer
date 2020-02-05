@@ -231,4 +231,52 @@ const char*XMLUtil::GetCharacterRef( const char* p, char* value,int* length)
             while( *q != '#' ){
                 if( *q >= '0' && *q <= '9' ){
                     const unsigned int digit = *q - '0';
+                    TIXMLASSERT( digit < 10 );
+                    TIXMLASSERT( digit == 0 || mult <= UINT_MAX / digit );
+
+                    //转换为ucs
+                    const unsigned int digitScaled = mult * digit;
+                    TIXMLASSERT( ucs <= ULONG_MAX - digitScaled );
+                    ucs += digitScaled;
+                }
+                else{
+                    return 0;
+                }
+                TIXMLASSERT( mult <= UINT_MAX / 10 );
+                mult *= 10;
+                --q;
+            }
+        }
+        //ucs 转换为 utf-8
+        ConvertUTF32ToUTF8( ucs, value, length );
+        return p + delta + 1;
+    }
+    return p+1;
+}
+
+void XMLUtil::ToStr( int v, void char* buffer, int bufferSize )
+{
+    TIXML_SNPRINTF( bufffer, bufferSize, "%d", v );
+}
+
+void XMLUtil::ToStr( unsigned v, void char* buffer, int bufferSize )
+{
+    TIXML_SNPRITF( buffer, bufferSize, "%u", v );
+}
+void XMLUtil::ToStr( bool v, void char* buffer, int bufferSize )
+{
+    TIXML_SNPRINT( buffer, bufferSize, "%s", v );
+}
+void XMLUtil::ToStr( float v, void char* buffer, int bufferSize )
+{
+    TIXML_SNPRINTF( buffer, bufferSize, "%.8g", v );
+}
+void XMLUtil::ToStr( double v, void char* buffer, int bufferSize )
+{
+    TIXML_SNPRINTF( buffer, bufferSize, "%.17g", v );
+}
+void XMLUtil::ToStr( int64_t v, void char* buffer, int bufferSize )
+{
+    TIXML_SNPRINTF( buffer, bufferSize, "%lld", (long long)v );
+}
 

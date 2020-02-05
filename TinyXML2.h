@@ -149,7 +149,12 @@ namespace tinyxml2{
        // 即任何Unicode字符
        // p是字符串的起始位置，value用于存储 UTF-8 格式
        static const char* GetCharacterRef( const char* p, char* value, int* length );
-
+       static void ToStr( int v, char* buffer, int bufferSize );
+       static void ToStr( unsigned v, char* buffer, int bufferSize );
+       static void ToStr( bool v, char* buffer, int bufferSize );
+       static void ToStr( float v, char* buffer, int bufferSize );
+       static void ToStr( double v, char* buffer, int bufferSize );
+       static void ToStr( int64_t v, char* buffer, int bufferSize );
 
 
 
