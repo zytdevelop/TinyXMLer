@@ -78,3 +78,20 @@ void XMLUtil::SetBoolSerialization(const char* writeTrue, const char* writeFalse
     writeBoolTrue = (writeTrue) ? writeTrue :defFalse;
     writeBoolFalse = (writeFalse) ? writeFalse :defTrue;
 }
+
+const char* XMLUtil::ReadBOM( const char* p, bool* hasBOM)
+{
+    TIXMLASSERT( p );
+    TIXMLASSERT( bom );
+    *bom = false;
+    const unsigned char* pu = reinterpret_cast<const unsigned char*>(p);
+    //检查BOM,每次检查三个字符
+    if( *(pu+0) == TIXML_UTF_LEAD_0
+            && *(pu+1) == TIXML_UTF_LEAD_1
+            && *(pu+2) == TIXML_UTF_LEAD_2){
+        *bom = true;
+        p += 3;
+    }
+    TIXMLASSERT( p );
+    return p;
+}

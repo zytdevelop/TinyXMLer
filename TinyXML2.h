@@ -117,6 +117,28 @@ namespace tinyxml2{
            return ch == ':' || ch == '_';
        }
 
+       //判断名称
+       inline static bool IsNameChar( unsigned char ch ){
+           return IsNameStartChar( ch )
+               || isdigit( ch )    //检查是否为十进制数
+               || ch == '.'
+               || ch == '-';
+       }
+
+       //字符串比较
+       inline static bool StringEuql( const char* p, const char* q, in nChar=INT_MAX ){
+           if( p == q ){
+               return true;
+           }
+           TIXMLASSERT( p );
+           TIXMLASSERT( q );
+           TIXMLASSERT( nChar >= 0 );
+           return strncmp( p, q, nChar ) == 0;
+       }
+
+       //验证编码方式
+       static const char* ReadBOM( const char* p, bool* hasBOM );
+
 
 
 
