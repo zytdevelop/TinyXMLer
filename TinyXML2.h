@@ -156,7 +156,14 @@ namespace tinyxml2{
        static void ToStr( double v, char* buffer, int bufferSize );
        static void ToStr( int64_t v, char* buffer, int bufferSize );
 
-
+       //将字符串转换位基本类型
+       //主要使用sscanf函数,将value读入str中
+       static bool ToInt( const char* str, int* value );
+       static bool ToUnsigned( const char* str, unsigned* value );
+       static bool ToBool( const char* str, bool* value );
+       static bool ToFloat( const char* str, float* value );
+       static bool ToDouble( const char* str, double* value );
+       static bool ToInt64( const char* str, int64_t* value );
 
     private:
         //code

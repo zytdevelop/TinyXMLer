@@ -253,7 +253,7 @@ const char*XMLUtil::GetCharacterRef( const char* p, char* value,int* length)
     }
     return p+1;
 }
-
+//原始类型转换位字符串实现
 void XMLUtil::ToStr( int v, void char* buffer, int bufferSize )
 {
     TIXML_SNPRINTF( bufffer, bufferSize, "%d", v );
@@ -279,4 +279,14 @@ void XMLUtil::ToStr( int64_t v, void char* buffer, int bufferSize )
 {
     TIXML_SNPRINTF( buffer, bufferSize, "%lld", (long long)v );
 }
+
+
+//字符串转换位基本类型实现
+static bool ToInt( const char* str, int* value );
+static bool ToUnsigned( const char* str, unsigned* value );
+static bool ToBool( const char* str, bool* value );
+static bool ToFloat( const char* str, float* value );
+static bool ToDouble( const char* str, double* value );
+static bool ToInt64( const char* str, int64_t* value );
+
 
