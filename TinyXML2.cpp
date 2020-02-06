@@ -282,11 +282,53 @@ void XMLUtil::ToStr( int64_t v, void char* buffer, int bufferSize )
 
 
 //字符串转换位基本类型实现
-static bool ToInt( const char* str, int* value );
-static bool ToUnsigned( const char* str, unsigned* value );
-static bool ToBool( const char* str, bool* value );
-static bool ToFloat( const char* str, float* value );
-static bool ToDouble( const char* str, double* value );
-static bool ToInt64( const char* str, int64_t* value );
+static bool XMLUtil:: ToInt( const char* str, int* value )
+{
+    if( TIXML_SSCANF( str, "%d", value ) == 1 ){
+        return true;
+    }
+    return false;
+}
+static bool XMLUtil:: ToUnsigned( const char* str, unsigned* value ){
+   if( TIXML_SSCANF( str, "%u", value ) == 1 ){
+       return true;
+   }
+   return false;
+}
+static bool XMLUtil::ToBool( const char* str, bool* value ){
+    int ival = 0;
+    if( ToInt(str, &ival )){
+        *value = (ival == 0) ? false : true;
+        return true;
+    }
+    if( StringEqual( str, "true" ) ){
+        *value = true;
+        return true;
+    }
+    else if( StringEqual( str, "false" ) ){
+        *value = false;
+        return true;
+    }
+    return false;
+}
 
-
+static bool XMLUtil::ToFloat( const char* str, float* value ){
+    if( TIXML_SSCANF( str, "%f", value ) == 1 ){
+        return true;
+    }
+    return false;
+}
+static bool XMLUtil::ToDouble( const char* str, double* value ){
+    if( TIXML_SSCANF( str, "%lf", value ) == 1){
+        return true;
+    }
+    return false;
+}
+static bool XMLUtil::ToInt64( const char* str, int64_t* value ){
+    long long v = 0;
+    if( TIXML_SSCANF( str, "%lld", &v ) == 1 ){
+        *value = (int64_t)v;
+        return true;
+    }
+    return false;
+}
