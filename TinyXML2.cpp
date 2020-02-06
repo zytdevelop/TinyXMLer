@@ -363,5 +363,173 @@ void XMLNode::Unlike( XMLNode* child )
     child->_parent = 0;
 }
 
+void XMLNode*::DeleteNode( XMLNode* node )
+{
+    //如果节点为空返回
+    if( node == 0 ){
+        return;
+    }
+    TIXMLASSERT( node->_document );
+    //检查节点是否存在值
+    if( !node->ToDocument() ){
+        node->_document->MarkInUse(node);
+    }
+
+    //释放节点
+    MemPool* pool = node->_memPool;
+    node->~XMLNode();
+    pool->Free( node );
+}
+
+//检查节点是否有链接及相关操作实现
+
+void XMLNode::InsertChildPreamble( XMLNode* insertThis)
+{
+    TIXMLASSERT( insertThis );
+    TIXMLASEERT( insertThis->_document == _document );
+    //断开链接
+    if(insertThis->_partent){
+        insertThis->_parent->Unlink( insertThis );
+    }
+    //跟踪
+    else{
+        insertThis->_document->MarkInUse(insertThis);
+        insertThis->_memPool->SetTracked();
+    }
+}
+
+//判断元素名称是否存在实现
+const XMLElement* XMLNode::ToElementWithName( const char* name ) const{
+    const XMLElement* element = this->ToElement();
+
+    if(element == 0){
+        return 0;
+    }
+
+    if(name == 0){
+        return element;
+    }
+
+    //比较元素名和名称
+    if( XMLUtil::StringEqual( element->Name(), name  ) ){
+        return element;
+    }
+    return 0;
+}
+
+//XMLNode 构造和析构函数
+XMLNode::XMLNode( XMLDocument* doc):
+    _document( doc ),
+    _parent( 0 ),
+    _value(),
+    _parseLineNum( 0 ),
+    _firstChild( 0 ), _lastChild( 0 ),
+    _prev( 0 ), _next( 0 ),
+    _userData( 0 ),
+    _memPool( 0 )
+{
+}
 
 
+XMLNode::~XMLNode()
+{
+    DeleteChildren();
+    if( _parent ){
+        _parent->Unlink( this );
+    }
+}
+
+//深度解析实现
+char* XMLNode::ParseDeep( char* p, StrPair* parentEndTag, int* curLineNumPtr )
+{
+    XMLDocument::DepthTracker tracker( _document );
+    if( _document->Error() )
+        return 0;
+
+    //当p不为空
+    while( p && *p ){
+        XMLNode* node = 0;
+        //识别 p 内容
+        p = _document->Identify( p, &node );
+        TIXMLASSERT( p );
+        if( node == 0 ){
+            break;
+        }
+
+        //当前解析行数
+        int initialLineNum = node->_parseLineNum;
+        //找到结尾标记
+        StrPari endTag;
+        p = node->ParseDeep( p, &endTag, curLineNumPtr );
+        //如果p为空,则报错
+        if( !p ){
+            DeleteNode( node );
+            if( !_document->Error() ){
+                _document->SetError( XML_ERROR_PARSING, initialLineNum, 0 );
+            }
+            break;
+        }
+
+        //查找声明
+        XMLDeclaration* decl = node->ToDeclaration();
+        if( decl ){
+            //如果第一个节点是声明,而最后一个节点也是声明,那么到目前为止只添加了声明
+            bool wellLocated = false;
+
+            //如果是文本内容则检查首尾是否为声明
+            if(ToDocument()){
+                if(FirstChild()){
+                    wellLocated =
+                        FirstChild() &&
+                        FirstChild()->ToDeclaration() &&
+                        Lastchild &&
+                        LastChild()->ToDeclaration();
+                }
+                else{
+                    wellLocated = true;
+                }
+            }
+            //如果不是,则报错并且删除节点
+            if( !wellLocated ){
+                _document->SetError( XML_ERROR_PARSING_DECLARATION, initialLineNum, "XMLDeclaration value=%s", decl->Value());
+                DeleteNode( node );
+                break;
+            }
+        }
+
+        //识别元素
+        XMLElement* ele = node->ToElement();
+        if( ele ){
+            //读取结束标记,将其返回给父母
+            if( ele->ClosingType() == XMLElement::CLOSING ){
+                if( parentEndTag ){
+                    ele->_value.TransferTo( parentEndTag );
+                }
+                //建立一个跟踪,然后立即删除
+                node->_memPool->SetTracked();
+                DeleteNode( node );
+                return p;
+            }
+            //处理返回到该处的结束标记,初始为不匹配
+            bool mismatch = false;
+            if( endTag.Empty() ){
+                //结束标志为 " < ", 不匹配
+                if( ele->ClosingType() == XMLElement::OPEN ){
+                    mismatch = false;
+                }
+            }
+            else{
+                if( ele->ClosingType() != XMLElement::OPEN ){
+                    mismatch = true;
+                }
+            }
+            if( mismatch ){
+                _document->SetError( XML_ERROR_MISMATCHED_ELEMENT, initialLineNum, "XMLElement name=%s", ele->Name());
+                DeleteNode( node );
+                break;
+            }
+        }
+        InsertEndChild( node );
+    }
+    return 0;
+}

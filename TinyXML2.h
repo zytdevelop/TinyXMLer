@@ -83,6 +83,17 @@ namespace tinyxml2{
         XMLNode* _next;
         void* _userData;
 
+        //构造和析构函数
+        explicit XMLNode( XMLDocument* );
+        virtual ~XMLNode();
+
+
+
+        //深度解析
+        virtual char* ParseDeep( char* p, StrPari* parentEndTag, int* curLineNumPtr);
+
+
+
 
 
 
@@ -95,6 +106,18 @@ namespace tinyxml2{
 
         //删除节点
         static void DeleteNode( XMLNode* node );
+
+        //插入节点前的准备
+        //首先检查节点是否有链接,如果有则断开链接;
+        //如果没有则检查是否有值,然后跟踪内存
+        void InsertChildPreamble( XMLNode* insertThis ) const;
+
+        //判断是否有该名称的元素,如果存在则返回元素.
+        const XMLElement* ToElementWithName( const char* name ) const;
+
+        //拷贝构造和重载函数
+        XMLNode( const XMLNode& );    //无需实现
+        XMLNode& operator=( const XMLNode& );    //无需实现
 
     };
 
