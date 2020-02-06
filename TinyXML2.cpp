@@ -332,3 +332,36 @@ static bool XMLUtil::ToInt64( const char* str, int64_t* value ){
     }
     return false;
 }
+
+
+//断开孩子节点实现
+void XMLNode::Unlike( XMLNode* child )
+{
+    //判断节点是否存在
+    TIXMLASSERT( child );
+    TIXMLASSERT( child->_document == _document );
+    TIXMLASSERT( child->_parent == this );
+
+    //重新链接孩子节点, _firstChild指向下一个节点
+    if( child == _firstChild ){
+        _firstChild = _firstChild->_next;
+    }
+
+    //_firstChild指向上一个节点
+    if( child == _lastChild ){
+        _lastChild = _lastChild->prev;
+    }
+
+    //child指向下一个节点
+    if( child->_next ){
+        child->_next->_prev = child->_prev;
+    }
+
+    //清空节点
+    child->_next = 0;
+    child->_prev = 0;
+    child->_parent = 0;
+}
+
+
+

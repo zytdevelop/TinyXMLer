@@ -58,6 +58,47 @@ namespace tinyxml2{
     };
 
     //code
+
+    //XML文档对象模型(DOM)中除了XMLAtrributes之外的每个对象的基类
+    //数据结构:链表、二叉树
+    //C++特性:面向对象,内存处理
+    class TINYXML2_LIB XMLNode{
+        //包含友元类(可以访问私有成员和保护成员)
+        friend class XMLDocument;
+        friend class XMLElement;
+    public:
+        //code
+
+
+
+    protected:
+        //code
+        XMLDocument* _document;
+        XMLNode* _parent;
+        mutable StrPair _value;    //被mutable修饰的变量,将永远处于可变状态,包括const修饰下
+        //节点
+        XMLNode* _firstChild;
+        XMLNode* _lastChild;
+        XMLNode* _prev;
+        XMLNode* _next;
+        void* _userData;
+
+
+
+
+    private:
+        //code
+        MemPool* _memPool;    //内存分配
+
+        //断开孩子节点的连接
+        void Unlink( XMLNode* child);
+
+        //删除节点
+        static void DeleteNode( XMLNode* node );
+
+    };
+
+    //实用工具类包含编码相关功能,字符解析,空格判断等功能
     class TINYXML_LIB_XMLUtil{
     public:
         //code
