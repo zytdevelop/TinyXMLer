@@ -69,6 +69,80 @@ namespace tinyxml2{
     public:
         //code
 
+        //获取文档
+        const XMLDocument* GetDocument() const{
+            //返回文档节点
+            TIXMLASSERT( _document );
+            return _document;
+        }
+
+        XMLDocument* GetDocument(){
+            TIXMLASSERT( _document );
+            return _document;
+        }
+
+        //获取元素
+        virtual XMLElement* ToElement(){
+            return 0;
+        }
+
+        virtual const XMLElement* ToElement() const{
+            return 0;
+        }
+
+        //获取文本
+        virtual XMLText* ToText(){
+            return 0;
+        }
+        virtual const XMLText* ToText() const{
+            return 0;
+        }
+
+
+        //获取注释
+        virtual XMLComment* ToComment(){
+            return 0;
+        }
+
+        virtual const XMLComment* ToComment() const{
+            return 0;
+        }
+
+        //获取文档
+        virtual XMLDocument* ToDocument() {
+            return0;
+        }
+
+        virtual XMLDocument* ToDocument() const{
+            return 0;
+        }
+
+        //获取声明
+        virtual XMLDeclaration* ToDeclaration(){
+            return 0;
+        }
+
+        virtual XMLDeclaration* ToDeclaration() const{
+            return 0;
+        }
+
+        //获取未知对象
+        virtual XMLUnknown* ToUnknown(){
+            return 0;
+        }
+
+        virtual const XMLUnknown* ToUnknow() const{
+            return 0;
+        }
+
+        //检查数据
+        const char* Value() const;
+
+        //设置节点值
+        void SetValue( const char* val, bool staticMem=false );
+
+
+
 
 
     protected:

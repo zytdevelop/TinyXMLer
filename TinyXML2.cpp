@@ -533,3 +533,22 @@ char* XMLNode::ParseDeep( char* p, StrPair* parentEndTag, int* curLineNumPtr )
     }
     return 0;
 }
+
+const char* XMLNode::Value() const
+{
+    //XMLDocuments 没有值,返回null
+    if( this->ToDocument() )
+        return 0;
+    return _value.GetStr();
+}
+void XMLNode::SetValue( const char* str, bool staticMem )
+{
+    //以插入方式
+    if( staticMem ){
+        _value.SetInternedStr( str );
+    }
+    //直接赋值
+    else{
+        _value_SetStr( str );
+    }
+}
