@@ -736,3 +736,55 @@ XMLNode* XMLNode::DeepClone( XMLDocument* target ) const
     }
     return clone;
 }
+
+char* XMLText::ParseDeep( char* p, StrPair* ,int* curLineNumPtr)
+{
+    //如果为CData型,则以"]]>"作为结尾标志解析
+    if( this->CData()){
+        p = _value.ParseText( p, "]]>", StrPari::NEEDS_NEWLINE_NORMALIZATION, curLineNumptr );
+        //错误
+        if( !p ){
+            _document->SetERROR( XML_ERROR_PARSING_CDATA, _parseLineNum, 0 );
+        }
+        return p;
+    }
+    //如果不是,则按照正常规则解析
+    else{
+        int flags = _document->ProcessEntities() ? StrPari::TEXT_ELEMENT : StrPari::TEXT_ELEMENT_LEAVE_ENTITIES;
+        if( _document->WhitespaceMode() == COLLAPSE_WHITESPAC()){
+            flag |= StrPari::NEEDS_WHITESPACE_COLLAPSING;
+        }
+
+        //以"<"作为结束标志
+        p = _value.ParseText( p, "<", flags, curLineNumPtr );
+        //-1,去掉"<"
+        if( p && *p ){
+            return p - 1;
+        }
+
+        //错误
+        if( !p ) {
+            _document->SetError( XML_ERROR_PARSING_TEXT, _parseLineNum, 0 );
+        }
+    }
+    return 0;
+}
+
+bool XMLText::Accept( XMLVisitor* visitor ) const
+{
+    TIXMLASSERT( visitor );
+    return visitor->Visit( *this );
+}
+
+XMLNode* XMLText::ShallowClone( XMLDocument* doc ) const
+{
+    if( !doc ){
+        doc = _document;
+    }
+
+    //复制到text
+    XMLText* text = doc->NewText( Value() );
+    text->SetCData( this->CData());
+    return text;
+}
+

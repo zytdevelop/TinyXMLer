@@ -58,6 +58,51 @@ namespace tinyxml2{
     };
 
     //code
+    class TINYXML2_LIB XMLText : public XMLNode
+    {
+        friend class XMLDocument;
+    public:
+        //code
+        //访问者接口
+        virtual bool Accept( XMLVisitor* visitor ) const;
+
+        //直接返回文本内容
+        virtual XMLText* ToText(){
+            return this;
+        }
+        virtual const XMLText* ToText() const{
+            return this;
+        }
+
+        //类型声明
+        void SetCData( bool isCData ){
+            _isCData = isCData;
+        }
+        //如果是CData文本元素,则返回true
+        bool CData() const {
+            return _isCData;
+        }
+
+        //克隆
+        virtual XMLNode* ShallowClone( XMLDocument* document ) const;
+
+        //
+    protected:
+        //code
+        //
+        //构造和析构
+        explicit XMLText( XMLDocument* doc ) : XMLNode( doc ), _isCData( false ) {}
+        virtual ~XMLText(){}
+
+        //深度解析
+        char* ParseDeep( char* p, StrPair* parentEndTag, int* curLineNumPtr );
+
+    private:
+        //code
+        bool _isCData;
+        XMLText( const XMLText& );
+        XMLText& operator=( const XMLText& );
+    };
 
     //XML文档对象模型(DOM)中除了XMLAtrributes之外的每个对象的基类
     //数据结构:链表、二叉树
