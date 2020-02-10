@@ -552,3 +552,39 @@ void XMLNode::SetValue( const char* str, bool staticMem )
         _value_SetStr( str );
     }
 }
+
+
+const XMLElement* XMLNode::PreviousSiblingElement( const char* name ) const
+{
+    for( const XMLNode* node = _prev; node; node = node->prev ){
+        const XMLElement* element = node->ToElementWithName( name );
+        if( element ){
+            return element;
+        }
+    }
+    return 0;
+}
+
+const XMLElement* XMLNode::FirstChildElement( const char* name ) const
+{
+    //遍历节点,找到第一个元素
+    for( const XMLNode* node = _firstChild; node; node = node->_next ){
+        const XMLElement* element = node->ToElementWithName( name );
+        if( element ){
+            return element;
+        }
+    }
+    return 0;
+}
+
+const XMLElement* XMLNode::LastChildElement( const char* name ) const
+{
+    //遍历,从最后一个节点开始
+    for( const XMLNode* node = _lastChild; node; node = node->_prev ){
+        const XMLElement* element = node->ToElementWithName( name ) );
+        if( element ){
+            return element;
+        }
+    }
+    return 0;
+}

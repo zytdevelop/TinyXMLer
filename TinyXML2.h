@@ -141,6 +141,72 @@ namespace tinyxml2{
         //设置节点值
         void SetValue( const char* val, bool staticMem=false );
 
+        //获取父节点
+        const XMLNode* Parent() const{
+            return _parent;
+        }
+
+        XMLNode* Parent(){
+            return _parent;
+        }
+
+        //空子节点
+        bool NoChildren() const{
+            return !_firstChild;
+        }
+
+        const XMLNode* FirstChild() const{
+            return _firstChild;
+        }
+
+        XMLNode* FirstChlid(){
+            return _firstChild;
+        }
+
+        //获取最后一个子节点,如果不存在,则返回null
+        const XMLNode* LastChild() const{
+            return _lastChild;
+        }
+
+        XMLNode* LastChild(){
+            return _lastChild;
+        }
+
+
+        //获取此节点的上一个兄弟节点
+        const XMLNode* PreviousSibling() const{
+            return _prev;
+        }
+
+        XMLNode* PreviousSibling(){
+            return _prev;
+        }
+
+        const XMLElement* PreviousSibling(const char* name = 0 ) const;
+
+        XMLElement* PreviousSibling(const char* name = 0 ) {
+            return const_cast<XMLElement*>(const_cast<const XMLElement*>(this)->PreviousSiblingElement( name ) );
+        }
+
+        //获取子元素
+        const XMLElement* FirstChildElement( const char* name = 0 ) const;
+
+        XMLElement* FirstChildElement( const char* name = 0 ){
+            //强制转换
+            return const_cast<XMLElment*>(const_cast<const XMLNode*>(this)->FirstChildElement( name ) );
+        }
+
+        //获取具有指定名称的最后一个子元素或可选的最后一个子元素
+        const XMLElement* LastChildElement( const char* name = 0 ) const;
+
+        XMLElement* LastChildElement( const char* name = 0){
+            //强制转换
+            return const_cast<XMLElement>(const_cast<const XMLNode*>(this)->LastChildElement( name ) );
+        }
+
+
+
+
 
 
 
