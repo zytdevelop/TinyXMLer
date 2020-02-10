@@ -588,3 +588,79 @@ const XMLElement* XMLNode::LastChildElement( const char* name ) const
     }
     return 0;
 }
+
+const XMLElement* XMLNode* XMLNode::NextSiblingElement( const char* name ) const
+{
+    for( const XMLNode* node = _next; node; node = node->_next ){
+        const XMLElement* element = node->ToElementWithName( name );
+        if( element ){
+            return element;
+        }
+    }
+    return 0;
+}
+
+
+XMLNode* XMLNode::InsertEndChild( XMLNode* addThis )
+{
+    TIXMLASSERT( addThis );
+    if( addThis->_document != _document ){
+        TIXMLASSERT( false );
+        return 0;
+    }
+
+    //准备插入
+    InsertChildPreamble( addThis );
+    //添加
+    if( _lastChild ){
+        TIXMLASSERT( _firstChild );
+        TIXMLASSERT( _lastChild->next == 0 );
+        _lastChild->next = addThis;
+        addThis->_prev = _lastChild;
+        _lastChild = addThis;
+
+        addThis->_next = 0;
+    }
+
+    //(右)子节点就是(左) 子节点
+    else{
+        TIXMLASSERT( _firstChild == 0 );
+        _firstChild = _lastChild = addThis;
+        addThis->_prev = 0;
+        addThis->_next = 0;
+    }
+    addThis->_parent = this;
+    return addThis;
+}
+
+
+XMLNode* XMLNode::InsertFirstChild( XMLNode* addThis )
+{
+    TIXMLASSERT( addThis );
+    if( addThis->_document != _document ){
+        TIXMLASSERT( false );
+        return 0;
+    }
+
+    InsertChildPreamble( addThis );
+
+    if(_firstChild ){
+        TIXMLASSERT( _lastChild );
+        TIXMLASSERT( _firstChild->_prev == 0 );
+
+        _firstChlid->_prev = addThis;
+        addThis->_next = _firstChild;
+        _firstChild = addThis;
+
+        addThis->_prev = 0;
+    }
+    else{
+        TIXMLASSERT( _lastChild == 0 );
+        _firstChild = _lastChild = addThis;
+
+        addThis->_prev = 0;
+        addThis->_next = 0;
+    }
+    addThis->_parent = this;
+    return addThis;
+}

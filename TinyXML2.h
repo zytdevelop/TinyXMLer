@@ -173,7 +173,7 @@ namespace tinyxml2{
         }
 
 
-        //获取此节点的上一个兄弟节点
+        //获取此节点的上一个(左)兄弟节点
         const XMLNode* PreviousSibling() const{
             return _prev;
         }
@@ -204,6 +204,27 @@ namespace tinyxml2{
             return const_cast<XMLElement>(const_cast<const XMLNode*>(this)->LastChildElement( name ) );
         }
 
+        //获取此节点的下一个(右)兄弟元素,并提供可选的名称
+
+        const XMLNode* NextSibling() const{
+            return _next;
+        }
+
+        XMLNode* NextSibling(){
+            return _next;
+        }
+
+        const XMLElement* NextSiblingElement( const char* name = 0 ) const;
+
+        XMLElement* NextSiblingElemnt( const char* name = 0 ){
+            return const_cast<XMLElement*>(const_cast<const XMLNode*>(this)->NextSiblingElement( name ) );
+        }
+
+        //添加(右)子节点
+        XMLNode* InsertEndChild( XMLNode* addThis );
+
+        //添加(左)子节点
+        XMLNode* InsertFirstChild( XMLNode* addThis );
 
 
 
