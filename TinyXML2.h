@@ -226,6 +226,33 @@ namespace tinyxml2{
         //添加(左)子节点
         XMLNode* InsertFirstChild( XMLNode* addThis );
 
+        //添加指定子节点
+        XMLNode* InsertAfterChild( XMLNode* afterThis, XMLNode* addThis );
+
+        //删除子节点
+        void DeleteChild( XMLNode* node);
+
+        //删除节点的所有子节点
+        void DeleteChildren();
+
+        //克隆函数,纯虚函数,用于继承,克隆当前节点
+        virtual XMLNode* ShallowClone( XMLNode* document ) const = 0;
+
+        //深度克隆,克隆当前节点所有子节点
+        XMLNode* DeepClone( XMLDocument* target ) const;
+
+        //节点比较
+        virtual bool ShallowEqual( const XMLNode* compare ) const = 0;
+
+        //访问接口
+        virtual bool Accept( XMLVisitor* visitor ) const = 0;
+
+        //用户数据
+        void SetUserData(void* userData){ _userData = userData; }
+
+        //将用户数据集添加到XMLNode 中
+        void* GetUserData() const { return _userData; }
+
 
 
 

@@ -664,3 +664,75 @@ XMLNode* XMLNode::InsertFirstChild( XMLNode* addThis )
     addThis->_parent = this;
     return addThis;
 }
+
+XMLNode* XMLNode::InsertAfterChild( XMLNode* afterThis, XMLNode* addThis )
+{
+    TIXMLASSERT( addThis );
+    if( addThis->_document != _document ){
+        TIXMLASSERT( false );
+        return 0;
+    }
+
+    TIXMLASSERT( afterThis );
+
+    if( afterThis->_parent != this ){
+        TIXMLASSERT( false );
+        return 0;
+    }
+
+    if( afterThis == addThis ){
+        return addThis;
+    }
+
+    if( afterThis->_next == ){
+        //最后一个节点或唯一节点
+        return InsertEndChild( addThis );
+    }
+
+    //插入准备
+    InsertChildPreamble( addThis );
+    //插入
+    addThis->_prev = afterThis;
+    addThis->_next = afterThis->_next;
+    afterThis->_next->prev = addThis;
+    afterThis->_next = addThis;
+    addThis->_parent = this;
+    return addThis;
+}
+
+void XMLNode::DeleteChild( XMLNode* node )
+{
+    TIXMLASSERT( node );
+    TIXMLASSERT( node->_document == _document );
+    TIXMLASSERT( node->_parent == this );
+    Unlink( node );
+    TIXMLASSERT( node->_prev == 0 );
+    TIXMLASSERT( node->_next == 0 );
+    TIXMLASSERT( node->_parent == 0 );
+    DeleteNode( node );
+}
+
+
+void XMLNode::DeleteChildren()
+{
+    while( _firstChild ){
+        TIXMLASSERT( _lastChild );
+        DeleteChild( _firstChild );
+    }
+    _firstChild = _lastChild = 0;
+}
+
+
+XMLNode* XMLNode::DeepClone( XMLDocument* target ) const
+{
+    XMLNode* clone = this->ShallowClone(target);
+    if(!clone) return 0;
+    //利用递归遍历
+    for( const XMLNode* child = this->FirstChild(); child; child = child->NextSibling()){
+        //将所有孩子节点克隆到clone
+        XMLNode* childClone = child->DeepClone(target);
+        TIXMLASSERT(childClone);
+        clone->InsertEndChild(childClone);
+    }
+    return clone;
+}
