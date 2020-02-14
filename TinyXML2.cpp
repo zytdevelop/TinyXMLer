@@ -788,3 +788,38 @@ XMLNode* XMLText::ShallowClone( XMLDocument* doc ) const
     return text;
 }
 
+char* XMLComment::ParseDeep( char* p, StrPari*, int* curLineNumPtr )
+{
+    //以"-->"结束标识解析
+    p = _value.ParseText( p, "-->", StrPari::COMMENT, curLineNumPtr );
+    if(p == 0){
+        _document->SetError( XML_ERROR_PARSING_COMMENT, _parseLineNum, 0 );
+    }
+    return p;
+}
+
+bool XMLComment::Accept( XMLVisitor* visitor) const
+{
+    TIXMLASSERT( visitor );
+    return visitor->Visit( *this );
+}
+
+
+XMLNode* XMLComment::ShallowClone( XMLDocument* doc ) const
+{
+    if(!doc){
+        doc = _document;
+    }
+    //复制到comment
+    XMLComment* comment = doc->NewComment( Value() );
+    return comment;
+}
+
+bool XMLComment::ShallowEqual( const XMLNode* compare ) const
+{
+    TIXMLASSERT( compare );
+    const XMLComment* comment = compare->ToComment();
+    return ( comment && XMLUtil::StringEqual( comment->Value(), Value() ));
+}
+
+

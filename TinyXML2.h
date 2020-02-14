@@ -58,6 +58,47 @@ namespace tinyxml2{
     };
 
     //code
+    //
+    class TINYXML2_LIB XMLComment : public XMLNode
+    {
+        friend class XMLDocument;
+    public:
+        //访问者接口
+        virtual bool Accept( XMLVisitor* visitor ) const;
+
+        //直接返回注释内容
+        virtual XMLComment* ToComment(){
+            return this;
+        }
+        virtual XMLComment* ToComment() const{
+            return this;
+        }
+
+        //克隆,建立一个副本
+        virtual XMLNode* ShallowClone( XMLDocument* document ) const;
+
+        //比较
+        virtual bool ShallowEqual( const XMLNode* compare ) const;
+
+
+
+    protected:
+        //构造函数
+        explicit XMLComment( XMLDocument* doc ) : XMLNode(doc){}
+        //析构函数
+        virtual ~XMLComment(){}
+
+        //深度解析
+        char* ParseDeep( char* p, StrPari* parentEndTag, int* curLineNumPtr );
+
+        //
+    private:
+        //构造函数和复制构造函数
+        XMLComment( const XMLComment& );
+        XMLComment& operator=(const XMLComment& );
+
+    };
+
     class TINYXML2_LIB XMLText : public XMLNode
     {
         friend class XMLDocument;
