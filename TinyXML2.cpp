@@ -822,4 +822,40 @@ bool XMLComment::ShallowEqual( const XMLNode* compare ) const
     return ( comment && XMLUtil::StringEqual( comment->Value(), Value() ));
 }
 
+char* XMLDeclaration::parseDeep( char* p, StrPari*, int* curLineNumPtr )
+{
+    //以"?>"为标识结束解析
+    p = _value.ParseText( p, "?>". StrPair::NEEDS_NEWLINE_NORMALIZATION, curLineNumPtr );
+    if( p == 0 ){
+        _document->SetError( XML_ERROR_PARSING_DECLARATION, _parseLineNum, 0 );
+    }
+    return p;
+}
+
+bool XMLDeclaration::Accept( XMLVisitor* visitor ) const
+{
+    TIXMLASSERT( visitor );
+    return visitor->Visit( *this );
+}
+
+XMLNode* XMLDeclaration::ShallowClone( XMLDocument* doc ) const
+{
+    if(!doc){
+        doc = _document;
+    }
+
+    //复制到dec
+    XMLDeclaration* dec = doc->NewDeclaration( Value() );
+    return dec;
+}
+
+bool XMLDeclatation::ShallowEqual( const XMLNode* compara ) const
+{
+    //确定参数不为空
+    TIXMLASSERT( compare );
+    //将参数转换为声明
+    const XMLDeclaration* declaration = compare->ToDeclaration();
+    //比较
+    return (declaration && XMLUtil::StringEqual( declaration->Value(), Value() ));
+}
 
