@@ -58,6 +58,53 @@ namespace tinyxml2{
     };
 
     //code
+
+
+    //未知内容类
+    //用于解析文档中未知内容
+    //重点是将无法识别的内容保存为未知,但不修改.
+    class TINYXML2_LIB XMLUnknown : public XMLNode
+    {
+        friend class XMLDocument;
+    public:
+        //访问者接口
+        virtual bool Accept( XMLVisitor* visitor ) const;
+
+        //直接返回未知内容
+        virtual XMLUnknown* ToUnknown(){
+            return this;
+        }
+
+        virtual XMLUnknown* ToUnknown() const{
+            return this;
+        }
+
+        //克隆,建立一个副本
+        virtual XMLNode* ShallowClone( XMLDocument* document ) const;
+
+        //比较,传递需要比较的内容
+        virtual bool ShallowEqual( const XMLNode* compare ) const;
+
+
+
+    protected:
+        //构造和析构
+        explicit XMLUnknown( XMLDocument* doc ): XMLNode( doc ) {}
+        virtual ~XMLUnknown(){}
+
+        //深度解析
+        char* ParseDeep( char* p, StrPair* parentEngTag, int* curLineNumPtr );
+
+
+    private:
+        //拷贝构造函数和重载
+        XMLUnknown( const XMLUnknown& );
+        XMLUnknown& operator=( const XMLUnknown& );
+
+    };
+
+
+
     //声明类
     class TINYXML2_LIB XMLDeclaration : public XMLNode
     {
@@ -89,7 +136,7 @@ namespace tinyxml2{
         char* ParseDeep( char* p, StrPair* parentEngTag, int* curLineNumptr );
 
     private:
-        //构造函数和复制构造函数
+        //拷贝构造和重载
         XMLDeclaration( const XMLDeclaration& );
         XMLDeclaration& operator=( const XMLDeclaration& );
 

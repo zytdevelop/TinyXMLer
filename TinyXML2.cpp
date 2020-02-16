@@ -859,3 +859,36 @@ bool XMLDeclatation::ShallowEqual( const XMLNode* compara ) const
     return (declaration && XMLUtil::StringEqual( declaration->Value(), Value() ));
 }
 
+char* ParseDeep( char* p, StarPair*, int* curLineNumPtr )
+{
+    //以">"为结尾解析
+    p = _value.ParseText( p, ">", StrPair::NEEDS_NEWLINE_NORMALIZATION, curLineNumPtr );
+    if( !p ){
+        _document->SetError( XML_ERROR_PARSING_UNKNOWN, _parseLineNum, 0 );
+    }
+    return p;
+}
+
+
+bool XMLUnknown::Accept( XMLVisitor* visitor ) const
+{
+    TIXMLASSERT( visitor );
+    return visitor->Visitor( *this );
+}
+
+XMLNode* XMLUnknown::ShalloClone( XMLDocument* doc ) const
+{
+    if( !doc ){
+        doc = _document;
+    }
+    XMLUnknown* text = doc->NewUnknown( Value() );
+    return text;
+}
+
+bool XMLUnknown::ShallowEqual( const XMLNode* compare ) const
+{
+    TIXMLASSERT( compare );
+    const XMLUnknown* unknown = compare->ToUnknown();
+    return ( unknown && XMLUtil::StringEqual( unknown->Value(), Value() ));
+}
+
