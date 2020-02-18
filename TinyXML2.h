@@ -60,6 +60,69 @@ namespace tinyxml2{
     //code
 
 
+    //属性类
+    class TINYXML2_LIB XMLAttribute
+    {
+        friend class XMLElement;
+    public:
+        //属性名称
+        const char* Name() const;
+
+        //属性值
+        const char* Value() const;
+
+        //文本行号
+        int GetLineNum() const { return _parseLineNum; }
+
+        //下一条属性
+        const XMLAttribute* Next() const{
+            return _next;
+        }
+
+        //转换值的类型
+        //转换为整数
+        XMLError QueryIntValue( int* value ) const;
+        //转换为无符号数
+        XMLError QueryUnsignedValue( unsigned int* value ) const;
+        //转换为64位整数
+        XMLError QueryInt64Value( int64_t* value ) const;
+        //转换为布尔型
+        XMLError QueryBoolValue( bool* value ) const;
+        //转换为双精度型
+        XMLError QueryDoubleValue( double* value ) const;
+        //转换为浮点型
+        XMLError QueryFloatValue( float* value ) const;
+
+
+
+
+    private:
+        //
+        enum{ BUF_SIZE = 200 };    //内存池大小
+        mutable StrPair _name;
+        mutable StrPair _value;
+        int _parseLineNum;
+        XMLAttribute* _next;
+        MemPool* _memPool;
+
+        //构造与析构函数
+        XMLAttribute():_name(), _value(), _parseLineNum(0), _next(0), _next(0), _memPool(0){}
+        virtual ~XMLAttribute() {}
+
+        //拷贝构造与重载函数
+        XMLAttribute( const XMLAttribute& );
+        void operator=(const XMLAttribute& );
+
+        //设置属性名称
+        void SetName( const char* name );
+
+        //深度解析
+        char* ParseDeep( char* p, bool processEntities, int* curLineNumPtr );
+
+
+    };
+
+
     //未知内容类
     //用于解析文档中未知内容
     //重点是将无法识别的内容保存为未知,但不修改.

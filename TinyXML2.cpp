@@ -892,3 +892,108 @@ bool XMLUnknown::ShallowEqual( const XMLNode* compare ) const
     return ( unknown && XMLUtil::StringEqual( unknown->Value(), Value() ));
 }
 
+
+void XMLAttribute::SetName( const char* name )
+{
+    _name.SetStr( n );
+}
+
+
+char* XMLAttribute::ParseDeep( char* p, bool processEntities, int* curLineNumPtr)
+{
+    //调用字符串解析名称函数
+    p = _name.ParseName( p );
+    if( !p || !*p ){
+        return 0;
+    }
+
+    //忽略空白
+    p = XMLUtil::SkipWhiteSpace( p, curLineNumPtr );
+    if( *p != '=' ){
+        return 0;
+    }
+
+    //定位到文本开头
+    ++p;
+    p = XMLUtil::SkipWhiteSpace( p, curLineNumPtr );
+
+    //判断是否为双引号或者单引号开头
+    if( *p != '\"' &&*p != '\'' ){
+        return 0;
+    }
+
+    //结束标志'\0'
+    char endTag[2] = { *p, 0 };
+
+    //定位到属性开头
+    ++p;
+
+    //调用字符类中的解析函数
+    p = _value.ParseText( p, endTag, processEntities ? StrPair::ATTRIBUTE_VALUE :StrPair::ATTRIBUTE_VALUE_LEAVE_ENTITIES, curLineNumPtr );
+    return p;
+}
+
+
+const char* XMLAttribute::Name() const
+{
+    return _name.GetStr();
+}
+
+const char* XMLAttribute::Value() const
+{
+    return _value.GetStr();
+}
+
+XMLError XMLAttribute::QueryIntValue( int* value ) const
+{
+    //转换成功则返回成功代码,否则返回错误代码
+    if( XMLUtil::ToInt( Value(), value )){
+        return XML_SUCCESS;
+    }
+    return XML_WRONG_ATTRIBUTE_TYPE;
+}
+
+XMLError XMLAttribute::QueryUnsignedValue( unsigned int* value ) const
+{
+    //转换成功则返回成功代码,否则返回错误代码
+    if( XMLUtil::ToUnsigned( Value(), value )){
+        return XML_SUCCESS;
+    }
+    return XML_WRONG_ATTRIBUTE_TYPE;
+}
+
+XMLError XMLAttribute::QueryInt64Value( int64_t* value ) const
+{
+    //转换成功则返回成功代码,否则返回错误代码
+    if( XMLUtil::ToInt64( Value(), value )){
+        return XML_SUCCESS;
+    }
+    return XML_WRONG_ATTRIBUTE_TYPE;
+}
+
+XMLError XMLAttribute::QueryBoolValue( Bool* value ) const
+{
+    //转换成功则返回成功代码,否则返回错误代码
+    if( XMLUtil::ToBool( Value(), value )){
+        return XML_SUCCESS;
+    }
+    return XML_WRONG_ATTRIBUTE_TYPE;
+}
+
+XMLError XMLAttribute::QueryFloatValue( float* value ) const
+{
+    //转换成功则返回成功代码,否则返回错误代码
+    if( XMLUtil::ToFloat( Value(), value )){
+        return XML_SUCCESS;
+    }
+    return XML_WRONG_ATTRIBUTE_TYPE;
+}
+
+XMLError XMLAttribute::QueryDoubleValue( double* value ) const
+{
+    //转换成功则返回成功代码,否则返回错误代码
+    if( XMLUtil::ToDouble( Value(), value )){
+        return XML_SUCCESS;
+    }
+    return XML_WRONG_ATTRIBUTE_TYPE;
+}
