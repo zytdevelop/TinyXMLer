@@ -60,6 +60,59 @@ namespace tinyxml2{
     //code
 
 
+
+    //元素类
+    class TINYXML2_LIB XMLElement : public XMLNode
+    {
+        friend class XMLDocument;
+    public:
+        //code
+        enum ElementClosing Type{
+            OPEN,    //<foo>
+            CLOSED,    //<foo/>
+            CLOSING    //</foo>
+        };
+
+    protected:
+        //code
+        //
+
+
+
+
+    private:
+        //code
+        enum{ BUF_SIZE = 200 };
+        ElementClosingType_closingType;    //元素展开状态
+        XMLAttribute* _rootAttribute;    //属性列表
+
+        //构造和析构函数
+        XMLElement( XMLDocument* doc );
+        virtual ~XMLElement();
+
+        //拷贝构造和重载
+        XMLElement( const XMLElement& );
+        void operator=( const XMLElment& );
+
+        //创建属性
+        XMLAttribute* CreateAttribute();
+
+        //查找
+        XMLAttribute* FindOrCreateAttribute( const char* name );
+
+        //删除
+        static void DeleteAttribute( XMLAttribute* attribute );
+
+        //解析属性
+        char* ParseAttributes( char* p, int* curLineNumPtr );
+
+
+
+
+    };
+
+
+
     //属性类
     class TINYXML2_LIB XMLAttribute
     {

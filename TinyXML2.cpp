@@ -997,3 +997,105 @@ XMLError XMLAttribute::QueryDoubleValue( double* value ) const
     }
     return XML_WRONG_ATTRIBUTE_TYPE;
 }
+
+
+XMLElement::XMLElement( XMLDocument* doc ) : XMLNode( doc ),
+_closingType( OPEN ),
+_rootAttribute( 0 )
+{
+}
+
+XMLElement::~XMLElement()
+{
+    //释放节点
+    while( _rootAttribute ) {
+        XMLAttribute* next = _rootAttribute->_next;
+        DeleteAttribute( _rootAttribute );
+        _rootAttribute = _next;
+    }
+}
+
+XMLAttribute* XMLElement::CreateAttribute()
+{
+    //获取元素大小
+    TIXMLASSERT( sizeof( XMLAttribute ) == _document->attributePool.ItemSize() );
+
+    //新建属性并申请内存
+    XMLAttribute* attrib = new ( _document->_attributePool.Alloc() ) XMLAttribute();
+    TIXMLASEERT( attrib );
+
+    //初始化内存地址
+    attrib->_memPool = &_document->_attributePool;
+    attrib->_memPool->SetTrack();
+    return attrib;
+}
+
+XMLAttribute* XMLElement::FindOrCreateAttribute( const char* name )
+{
+    //初始化属性表
+    XMLAttribute* last = 0;
+    XMLAttribute* attrib = 0;
+
+    //检查是否存在属性
+    for ( attrib = _rootAttribute; attrib; last = attrib,attrib = attrib->next ) {
+        //比较属性名
+        if( XMLUtil::StringEqual( attrib->Name(), name ) ){
+            break;
+        }
+    }
+
+    //如果找不到属性就创建一个
+    if( !attrib ) {
+        attrib = CreateAttribute();
+        TIXMLASSERT( attrib );
+        //如果当前属性存在，属性表连接属性
+        if( last ){
+            TIXMLASSERT( last->_next == 0 );
+            last->_next = attrib;
+        }
+        //如果不存在，新属性为根属性
+        else{
+            TIXMLASSERT( _rootAttribute == 0 );
+            _rootAttribute = attrib;
+        }
+        attrib->SetName( name );
+    }
+    return attrib;
+}
+
+void XMLELEMENT::DeleteAttribute( XMLAttribute* attribute )
+{
+    if( attribute == 0 ){
+        return;
+    }
+
+    MemPool* pool = attribute->_memPool;
+    //调用析构函数
+    attribute->~XMLAttribute();
+    //释放内存
+    pool->Free( attribute );
+}
+
+char* XMLElement::ParseAttributes( char* p, int* curLineNumPtr )
+{
+    XMLAttribute* prevAttribute = 0;
+
+    //解析知道p为空
+    while( p ){
+        //跳过空白
+        p = XMLUtil::SkipWhiteSpace( p, curLineNumPtr );
+        //如果字符为空,则警告
+        if( !(*p) ){
+            _document->SetError( XML_ERROR_PARSING_ELEMENT, _parseLineNum, "XMLElment, name=%s", Name() );
+            return 0;
+        }
+
+        //解析属性,首先解析名称
+        if( XMLUtil::IsNameStartChar( *p ) ){
+            XMLAttribute* attrib = CreateAttribute();
+            TIXMLASSERT( attrib );
+            //获取文档行号
+            attrib->parseLineNum = _document->_parseCurLineNum;
+
+
+
