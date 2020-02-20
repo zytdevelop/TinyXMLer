@@ -1096,6 +1096,48 @@ char* XMLElement::ParseAttributes( char* p, int* curLineNumPtr )
             TIXMLASSERT( attrib );
             //获取文档行号
             attrib->parseLineNum = _document->_parseCurLineNum;
+            int attrLineNum = attrib->_parseLineNum;
+            //深度解析文本行内容
+            p = attrib->ParseDeep()( p, _document->ProcessEntities(), curLineNumPtr );
+            //如果字符为空或者存在属性,首先删除该属性并报错
+            if( !p || Attribute( attrib->Name() )) {
+                DeleteAttribute( attribute );
+                _document->SetError( XML_ERROR_PARSING_ATTRIBUTE, attrLineNum, "XMLElement name=%s", Name() );
+                return 0;
+            }
 
+            //如果存在上一个属性,则链接当前属性
+            if ( prevAttribute ){
+                TIXMLASSERT( prevAttribute->_next == 0 );
+                prevAttribute->_next = attrib;
+            }
+            //否则,新属性为根属性
+            else{
+                TIXMLASSERT( _rootAttribute == 0 );
+                _rootAttribute = attrib;
+            }
+
+            prevAttribute = attrib;
+        }
+
+        //结束标志1
+        else if( *p == '>' ){
+            ++p;
+            break;
+        }
+
+        //结束标志2
+        else if( *p == '/' && *(p+1) == '>' ){
+            _closingType = CLOSED;
+            return p+2;
+        }
+        //其他情况则解析错误
+        else{
+            _document->SetError( XML_ERROR_PARSING_ELEMENT, _parseLineNum, 0 );
+            return 0;
+        }
+    }
+    return p;
+}
 
 
