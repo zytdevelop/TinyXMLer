@@ -1479,3 +1479,31 @@ XMLNode* XMLElement::ShallowClone( XMLDocument* doc ) const
     }
     return element;
 }
+
+
+bool XMLElement::ShallowEqual( const XMLNode* compare ) const
+{
+    TIXMLASEERT( compare );
+    const XMLElement* other = compare->ToElement();
+    //如果compare不为空, 比较名称
+    if（ other && XMLUtil::StringEqual( other->Name(), Name() ) ){
+        const XMLAttribute* a = FirstAttribute();
+        const XMLAttribute* b = other->FirstAttribute();
+        //如果a和b都不为空
+        while( a && b ){
+            //比较属性值
+            if( !XMLUtil::StringEqual( a->Value(), b->Value() ) ){
+                return false;
+            }
+            a = a->Next();
+            b = b->Next();
+        }
+        if( a || b ){
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+

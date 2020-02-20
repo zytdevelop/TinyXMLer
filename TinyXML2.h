@@ -304,6 +304,9 @@ namespace tinyxml2{
         //克隆
         virtual XMLNode* ShallowClone( XMLDocument* document ) const;
 
+        //比较
+        virtual bool ShallowEuqal( const XMLNode* compare ) const;
+
 
     protected:
         //code
