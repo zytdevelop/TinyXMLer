@@ -73,9 +73,220 @@ namespace tinyxml2{
             CLOSING    //</foo>
         };
 
+        //获取元素名字
+        const char* Name() const{
+            return Value;
+        }
+
+        //设置名称
+        void SetName( const char* str, bool staticMem=false ){
+            SetValue( str, staticMem );
+        }
+
+        //获取元素
+        virtual XMLElement* ToElement(){
+            return this;
+        }
+        virtual const XMLElemnt* ToElement() const{
+            return this;
+        }
+
+        //访问者接口
+        virtual bool Accept( XMLVisitor* visitor ) const;
+
+        //转换属性类型
+        XMLError QueryIntAttribute( const char* name, int* value ) const
+        {
+            //查找指定属性,下同
+            const XMLAttribute* a = FindAttribute( name );
+            //找不到则警告
+            if( !a ){
+                return XML_NO_ATTRIBUTE;
+            }
+            //找到,转换其值,下同
+            return a->QueryIntValue( value );
+        }
+
+        XMLError QueryUnsignedAttribute( const char* name, unsigned int* value ) const
+        {
+            const XMLAttribute* a = FindAttribute( name );
+            if( !a ){
+                return XML_NO_ATTRIBUTE;
+            }
+            return a->QueryUnsignedValue( value );
+        }
+
+        XMLError QueryInt64Attribute( const char* name, int64_t* value ) const
+        {
+            const XMLAttribute* a = FindAttribute( name );
+            if( !a ){
+                return XML_NO_ATTRIBUTE;
+            }
+            return a->QueryInt64Value( value );
+        }
+
+        XMLError QueryBoolAttribute( const char* name, bool* value ) const
+        {
+            const XMLAttribute* a = FindAttribute( name );
+            if( !a ){
+                return XML_NO_ATTRIBUTE;
+            }
+            return a->QueryBoolValue( value );
+        }
+
+        XMLError QueryDoubleAttribute( const char* name, double* value ) const
+        {
+            const XMLAttribute* a = FindAttribute( name );
+            if( !a ){
+                return XML_NO_ATTRIBUTE;
+            }
+            return a->QueryDoubleValue( value );
+        }
+
+        XMLError QueryFloatAttribute( const char* name, float* value ) const
+        {
+            const XMLAttribute* a = FindAttribute( name );
+            if( !a ){
+                return XML_NO_ATTRIBUTE;
+            }
+            return a->QueryFloatValue( value );
+        }
+
+        XMLError QueryStringAttribute( const char* name, const char** value ) const
+        {
+            const XMLAttribute* a = FindAttribute( name );
+            if( !a ){
+                return XML_NO_ATTRIBUTE;
+            }
+            *value = a->Value();
+            return XML_SUCCESS;
+        }
+
+        //查询属性类型
+        int IntAttribute( const char* name, int defaultValue = 0 ) const;
+        unsigned UnsignedAttribute( const char* name, unsigned defultValue = 0 ) const;
+        int64_t Int64Attribute( const char* name, int64_t defaultValue = 0 ) const;
+        bool BoolAttribute( const char* name, bool defaultValue = false ) const;
+        double DoubleAttribute( const char* name, double defaultValue = 0 ) const;
+        float FloatAttribute( const char* name, float defaultValue = 0 ) const;
+
+        //转换结果
+        XMLError QueryAttribute( const char* name, int* value ) const{
+            return QueryIntAttribute( name, value );
+        }
+
+        XMLError QueryAttribute( const char* name, unsigned int* value ) const{
+            return QueryUnsignedAttribute( name, value );
+        }
+
+        XMLError QueryAttribute( const char* name, int64_t* value ) const{
+            return QueryInt64Attribute( name, value );
+        }
+
+        XMLError QueryAttribute( const char* name, bool* value ) const{
+            return QueryBoolAttribute( name, value );
+        }
+
+        XMLError QueryAttribute( const char* name, double* value ) const{
+            return QueryDoubleAttribute( name, value );
+        }
+
+        XMLError QueryAttribute( const char* name, float* value ) const{
+            return QueryFloatAttribute( name, value );
+        }
+
+        //设置属性名
+        void SetAttribute( const char* name, const char* value ){
+            //查找或创建属性名,函数原型在本次实验上面内容
+            XMLAttribute* a = FindOrCreateAttribute( name );
+            a->SetAttribute( value );
+        }
+
+        void SetAttribute( const char* name, int value ){
+            //查找或创建属性名,函数原型在本次实验上面内容
+            XMLAttribute* a = FindOrCreateAttribute( name );
+            a->SetAttribute( value );
+        }
+
+        void SetAttribute( const char* name, unsigned value ){
+            //查找或创建属性名,函数原型在本次实验上面内容
+            XMLAttribute* a = FindOrCreateAttribute( name );
+            a->SetAttribute( value );
+        }
+
+        void SetAttribute( const char* name, int64_t value ){
+            //查找或创建属性名,函数原型在本次实验上面内容
+            XMLAttribute* a = FindOrCreateAttribute( name );
+            a->SetAttribute( value );
+        }
+
+        void SetAttribute( const char* name, bool value ){
+            //查找或创建属性名,函数原型在本次实验上面内容
+            XMLAttribute* a = FindOrCreateAttribute( name );
+            a->SetAttribute( value );
+        }
+
+        void SetAttribute( const char* name, double value ){
+            //查找或创建属性名,函数原型在本次实验上面内容
+            XMLAttribute* a = FindOrCreateAttribute( name );
+            a->SetAttribute( value );
+        }
+
+        void SetAttribute( const char* name, float value ){
+            //查找或创建属性名,函数原型在本次实验上面内容
+            XMLAttribute* a = FindOrCreateAttribute( name );
+            a->SetAttribute( value );
+        }
+
+
+        //删除指定属性
+        void DeleteAttribute( const char* name );
+
+        //根属性
+        const XMLAttribute* FirstAttribute() const{
+            return _rootAttribute;
+        }
+
+        //查找特定属性
+        const XMLAttribute* FindAttribute( const char* name ) const;
+
+        //获取元素文本
+        const char* GetText() const;
+
+        //设置元素内容
+        void SetText( const char* inText );
+
+        void SetText( int inText );
+
+        void SetText( unsigned inText );
+
+        void SetText( int64_t inText );
+
+        void SetText( bool inText );
+
+        void SetText( double inText );
+
+        void SetText( float inText );
+
+
+        //文本转换类型
+        XMLError QueryIntText( int* ival ) const;
+
+        XMLError QueryUnsignedText( unsigned* uval ) const;
+
+        XMLError QueryInt64Text( int64_t* uval ) const;
+
+        XMLError QueryBoolText( bool* bval ) const;
+
+        XMLError QueryFloatText( float* fval ) const;
+
+        XMLError QueryDoubleText( double* dval ) const;
+
+
     protected:
         //code
-        //
+        //深度解析每一行内容
+        char* ParseDeep( char* p, StrPair* parentEndTag, int* curLineNumPtr );
 
 
 

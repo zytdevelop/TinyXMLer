@@ -1141,3 +1141,222 @@ char* XMLElement::ParseAttributes( char* p, int* curLineNumPtr )
 }
 
 
+char* XMLElement::ParseDeep( char* p, StrPair* parentEndTag, int* curLineNumPtr)
+{
+    //读取元素
+    p = XMLUtil::SkipWhiteSpace( p, curLineNumPtr );
+
+    //设置结尾标志
+    if( *p == '/' ){
+        _closingType = CLOSING;
+        ++p;
+    }
+
+    //解析名称
+    p = _value.ParseName( p );
+    if( _value.Empty() ){
+        return 0;
+    }
+
+    //解析属性
+    p = ParseAttributes( p, curLineNumPtr );
+    if( !p || !*p || _closingType != OPEN ){
+        return p;
+    }
+
+    p = XMLNode::ParseDeep( p, parentEndTag, curLineNumPtr );
+    return p;
+}
+
+bool XMLElement::Accept( XMLVisitor* visitor ) const
+{
+    TIXMLASSERT( visitor );
+    //进入访问者模式,遍历所有孩子节点
+    if( visitor->VisiEnter( *this, _rootAttribute) ){
+        for( const XMLNode* node = FirstChild(); node; node = node->NextSibling() ){
+            if( !node->Accept( visitor ) ){
+                break;
+            }
+        }
+    }
+    //退出访问者模式
+    return visitor->VisitExit( *this );
+}
+
+const char* Attribute( const char* name, const char* value=0 ) const
+{
+    //查找属性
+    const XMLAttribute* a = FindAttribute( name );
+    if( !a ){
+        return 0;
+    }
+
+    //如果找到属性,返回其值
+    if( !value || XMLUtil::StringEqual( a->Value(), value ) ){
+        return a->Value();
+    }
+    return 0;
+
+}
+
+int XMLElement::IntAttribute( const char* name, int defaultValue) const
+{
+    int i = defaultValue;
+    //转换属性值类型,然后返回,下同
+    QueryIntAttribute( name, &i );
+    return i;
+}
+
+unsigned XMLElement::UnsignedAttribute( const char* name, unsigned defaultValue) const
+{
+    unsigned i = defaultValue;
+    //转换属性值类型,然后返回,下同
+    QueryUnsignedAttribute( name, &i );
+    return i;
+}
+
+
+
+int64_t XMLElement::Int64Attribute( const char* name, int64_t defaultValue) const
+{
+    int64_t i = defaultValue;
+    //转换属性值类型,然后返回,下同
+    QueryInt64Attribute( name, &i );
+    return i;
+}
+
+
+bool XMLElement::BoolAttribute( const char* name, bool defaultValue) const
+{
+    bool b = defaultValue;
+    //转换属性值类型,然后返回,下同
+    QueryUnsignedAttribute( name, &b );
+    return b;
+}
+
+
+double XMLElement::DoubleAttribute( const char* name, double defaultValue) const
+{
+    double d = defaultValue;
+    //转换属性值类型,然后返回,下同
+    QueryUnsignedAttribute( name, &d );
+    return d;
+}
+
+
+float XMLElement::FloatAttribute( const char* name, float defaultValue) const
+{
+    float f = defaultValue;
+    //转换属性值类型,然后返回,下同
+    QueryUnsignedAttribute( name, &f );
+    return f;
+}
+
+
+void XMLElement::DeleteAttribute( const char* name )
+{
+    //prev接收属性表
+    XMLAttribute* prev = 0;
+    for( XMLAttribute* a = _rootAttribute; a; a = a->_next ){
+        //找到属性并断开链接
+        if( XMLUtil::StringEqual( name, a->Name() ) ){
+            if( prev ){
+                prev->_next = a->_next;
+            }
+            else{
+                _rootAttribute = a->_next;
+            }
+            //释放
+            DeleteAttribute( a );
+            break;
+        }
+        prev = 0;
+    }
+}
+
+const XMLAttribute* XMLElement::FindAttribute( const char* name ) const
+{
+    //遍历属性表
+    for( XMLAttribute* a = _rootAttribute; a; a = a->_next ) {
+        if( XMLUtil::StringEqual( a->Name(), name ) ) {
+            return a;
+        }
+    }
+    return 0;
+}
+
+const char* XMLElement::GetText() const
+{
+    if( FirstChild() && FirstChild()->ToText() ){
+        return FirstChild()->Value();
+    }
+    return 0;
+}
+
+void XMLElement::SetText( const char* inText )
+{
+    //找到第一个子节点并重新设置值
+    if( FirstChild() && FirstChild()->ToText() )
+        FirstChild()->SetValue( inText );
+    //直接插入
+    else{
+        XMLText* theText = GetDocument()->NewText( inText );
+        InsertFirstChild( theText );
+    }
+}
+
+void XMLElement::SetText( int v )
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+
+void XMLElement::SetText( unsigned v )
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+void XMLElement::SetText( int64_t v )
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+void XMLElement::SetText( bool v )
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+void XMLElement::SetText( float v )
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+void XMLElement::SetText( double v )
+{
+    char buf[BUF_SIZE];
+    XMLUtil::ToStr( v, buf, BUF_SIZE );
+    SetText( buf );
+}
+
+
+
+XMLError XMLElement::QueryIntText( int* ival ) const
+{
+    if( FirstChild() && FirstChild()->ToText() ){
+        const char* t = FirstChild()->Value();
+        if( XMLUtil::ToInt( t, ival ) ){
+            return XML_SUCCESS;
+        }
+        return XML_CAN_NOT_CONVERT_TEXT;
+    }
+    return XML_NO_TEXT_NODE;
+}
+
+
+
+
