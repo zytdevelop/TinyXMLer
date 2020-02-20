@@ -1358,5 +1358,124 @@ XMLError XMLElement::QueryIntText( int* ival ) const
 }
 
 
+XMLError XMLElement::QueryUnsignedText( unsigned* uval ) const
+{
+    if( FirstChild() && FirstChild()->ToText() ){
+        const char* t = FirstChild()->Value();
+        if( XMLUtil::ToUnsigned( t, uval ) ){
+            return XML_SUCCESS;
+        }
+        return XML_CAN_NOT_CONVERT_TEXT;
+    }
+    return XML_NO_TEXT_NODE;
+}
 
 
+
+XMLError XMLElement::QueryInt64Text( int64_t* ival ) const
+{
+    if( FirstChild() && FirstChild()->ToText() ){
+        const char* t = FirstChild()->Value();
+        if( XMLUtil::ToInt64( t, ival ) ){
+            return XML_SUCCESS;
+        }
+        return XML_CAN_NOT_CONVERT_TEXT;
+    }
+    return XML_NO_TEXT_NODE;
+}
+
+
+XMLError XMLElement::QueryBoolText( bool* bval ) const
+{
+    if( FirstChild() && FirstChild()->ToText() ){
+        const char* t = FirstChild()->Value();
+        if( XMLUtil::ToBool( t, bval ) ){
+            return XML_SUCCESS;
+        }
+        return XML_CAN_NOT_CONVERT_TEXT;
+    }
+    return XML_NO_TEXT_NODE;
+}
+
+
+XMLError XMLElement::QueryFloatText( float* fval ) const
+{
+    if( FirstChild() && FirstChild()->ToText() ){
+        const char* t = FirstChild()->Value();
+        if( XMLUtil::ToFloat( t, fval ) ){
+            return XML_SUCCESS;
+        }
+        return XML_CAN_NOT_CONVERT_TEXT;
+    }
+    return XML_NO_TEXT_NODE;
+}
+
+
+XMLError XMLElement::QueryDoubleText( double* dval ) const
+{
+    if( FirstChild() && FirstChild()->ToText() ){
+        const char* t = FirstChild()->Value();
+        if( XMLUtil::ToDouble( t, dval ) ){
+            return XML_SUCCESS;
+        }
+        return XML_CAN_NOT_CONVERT_TEXT;
+    }
+    return XML_NO_TEXT_NODE;
+}
+
+int XMLElement::IntText( int defaultValue ) const
+{
+    int i = defaultValue;
+    QueryIntText( &i );
+    return i;
+}
+
+unsigned XMLElement::UnsignedText( unsigned defaultValue ) const
+{
+    unsigned i = defaultValue;
+    QueryUnsignedText( &i );
+    return i;
+}
+
+int64_t XMLElement::Int64Text( int64_t defaultValue ) const
+{
+    int64_t i = defaultValue;
+    QueryInt64Text( &i );
+    return i;
+}
+
+bool XMLElement::BoolText( bool defaultValue ) const
+{
+    bool b = defaultValue;
+    QueryBoolText( &b );
+    return b;
+}
+
+float XMLElement::FloatText( float defaultValue ) const
+{
+    int f = defaultValue;
+    QueryIntText( &f );
+    return f;
+}
+
+double XMLElement::DoubleText( double defaultValue ) const
+{
+    double d = defaultValue;
+    QueryDoubleText( &d );
+    return d;
+}
+
+XMLNode* XMLElement::ShallowClone( XMLDocument* doc ) const
+{
+    if( !doc ){
+        doc = _document;
+    }
+    //新建元素列表
+    XMLElement* element = doc->NewElement( Value() );
+
+    //获取名称和值
+    for( const XMLAttribute* a = FirstAttribute(); a; a = a->Next() ){
+        element->SetAttribute( a->Name(), a->Value() );
+    }
+    return element;
+}

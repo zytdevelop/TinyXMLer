@@ -274,13 +274,35 @@ namespace tinyxml2{
 
         XMLError QueryUnsignedText( unsigned* uval ) const;
 
-        XMLError QueryInt64Text( int64_t* uval ) const;
+        XMLError QueryInt64Text( int64_t* ival ) const;
 
         XMLError QueryBoolText( bool* bval ) const;
 
         XMLError QueryFloatText( float* fval ) const;
 
         XMLError QueryDoubleText( double* dval ) const;
+
+        //查询文本类型
+        int IntText( int defaultValue = 0 ) const;
+
+        unsigned UnsignedText( unsigned defaultValue = 0 ) const;
+
+        int64_t Int64Text( int64_t defaultValue = 0 ) const;
+
+        bool BoolText( bool defaultValue = false ) const;
+
+        double DoubleText( double defaultValue = 0 ) const;
+
+        float FloatText( float defaultValue = 0 ) const;
+
+
+        //元素合闭状态
+        ElementClosingType ClosingType() const{
+            return _closingType;
+        }
+
+        //克隆
+        virtual XMLNode* ShallowClone( XMLDocument* document ) const;
 
 
     protected:
