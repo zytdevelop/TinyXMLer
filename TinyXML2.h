@@ -59,6 +59,39 @@ namespace tinyxml2{
 
     //code
 
+    //文档类
+    //处理空白的方式
+    enum Whitespace {
+        PERSERVE_WHITESPACE,
+        COLLAPSE_WHITESPACE
+    };
+
+    class TINYXML2_LIB XMLDocument : public XMLNode{
+        friend class XMLElement;
+        friend class XMLNode;
+        friend class XMLText;
+        friend class XMLComment;
+        friend class XMLDeclaration;
+        friend class XMLUnknown;
+    public:
+        //
+
+
+    private:
+        //变量
+        bool _writeBOM;    //是否写入
+        bool _processEntities;    //实体
+        XMLError _errorID;    //错误ID
+        Whitespace _whitespaceMode;    //空白
+        mutable StrPair _errorStr;    //错误字符
+        int _errorLineNum;    //错误行号
+        char* _charBuffer;    //字符缓存区
+        int _parseCurLineNum;    //当前解析行
+        int _parsingDepth;    //解析深度
+        DynArray<XMLNode*, 10> _unlinked;    //未链接节点
+        MemPoolT< sizeof(XMLElemen) > _elementPool;    //
+
+
 
 
     //元素类
