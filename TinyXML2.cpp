@@ -1553,3 +1553,55 @@ void XMLDocument::Parse()
     ParseDeep(p, 0, &_parseCurLineNum );
 }
 
+
+void XMLDocument::SetError( XMLError error, int lineNum, const char* format, ... )
+{
+    TIXMLASEERT( error >= 0 && error < XML_ERROR_COUNT );
+    //获取错误ID和行号
+    _errorID = error;
+    _errorLineNum = lineNum;
+    _errorStr.Reset();
+
+    //默认缓存空间
+    size_t BUFFER_SIZE = 1000;
+    char* buffer = new char[BUFFER_SIZE];
+
+    //打印警告
+    TIXMLASSERT( sizeof(error) <= sizeof(int) );
+    TIXML_SNPRINTF(buffer, BUFFER_SIZE, "Error=%s ErrorID=%d (0x%x) Line number=%d", ErrorIDToName(error), int(error), int(error), lineNum);
+
+    //如果传入另外的参数,则将其转换为字符串粘贴在buffer后面
+    if( format ){
+        size_t len = strlen(buffer);
+        TIXML_SNPRINTF(buffer + len, BUFFER_SIZE - len, ": ");
+        len = strlen(buffer);
+
+        //va_list是用于处理多参数的系统类
+        va_list va;
+        va_start(va, format);
+        TIXML_VSNPRINTF(buffer + len, BUFFER_SIZE - len, format, va );
+        va_end(va);
+    }
+
+    _errorStr.SetStr(buffer);
+    //释放
+    delete[] buffer;
+}
+
+
+void XMLDocument::PushDepth()
+{
+    _parsingDepth++;
+    //如果等于最大深度,则警告
+    if( _parsingDepth == TINYXML2_MAX_ELEMENT_DEPTH){
+        SetError(XML_ELEMENT_DEPTH_EXCEEDED, _parseCurLineNum, "Elemen nesting is too deep.");
+    }
+}
+
+
+void XMLDocument::PopDepth()
+{
+    TIXMLASSERT(——parsingDepth > 0);
+    _parsingDepth--;
+}
+

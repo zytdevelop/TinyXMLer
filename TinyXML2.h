@@ -104,7 +104,34 @@ namespace tinyxml2{
         //初始化解析深度
         void Parse();
 
-        //
+        //打印警告内容
+        void SetError( XMLError error, int lineNum, const char* format, ... );
+
+        //堆栈跟踪:如果出现格式错误的XML或者一个过深的XML会导致堆栈溢出,所以需要跟踪.
+        class DepthTracker{
+            public:
+                //构造函数
+                explicit DepthTracker(XMLDocument* document){
+                    this->_document = document;
+                    document->PushDepth();
+                }
+                ~DepthTracker(){
+                    //降低深度
+                    _document->PopDepth();
+                }
+            private:
+                XMLDocument* _document;
+        };
+
+        //增加深度
+        void PushDepth();
+
+        //降低深度
+        void PopDepth();
+
+        //创建节点
+        template<class NodeType, int PoolElementSize>
+        NodeType* CreateUnlinkedNode( MemPoolT<PoolElementSize>& pool );
 
 
 
