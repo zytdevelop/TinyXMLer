@@ -1534,4 +1534,22 @@ bool XMLElement::ShallowEqual( const XMLNode* compare ) const
 
 void XMLDocument::Parse()
 {
-    //
+    //判断释放存在节点
+    TIXMLASSERT( noChildren() );
+    TIXMLASSERT( _charBuffer );
+    //从第一行开始解析
+    _parseCurLinueNum = 1;
+    _parseLineNum = 1;
+    char* p = _charBuffer;
+    p = XMLUtil::SkipWhiteSpace( p, &_parseCurLineNum );
+    p = const_cast<char*>(XMLUtil::ReadBOM( p, &_writeBOM) );
+    //判断解析内容是否为空
+    if( !*p ){
+        SetError( XML_ERROR_EMPTY_DOCUMENT, 0, 0 );
+        return;
+    }
+
+    //深度解析
+    ParseDeep(p, 0, &_parseCurLineNum );
+}
+
