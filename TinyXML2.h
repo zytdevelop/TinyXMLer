@@ -89,7 +89,22 @@ namespace tinyxml2{
         int _parseCurLineNum;    //当前解析行
         int _parsingDepth;    //解析深度
         DynArray<XMLNode*, 10> _unlinked;    //未链接节点
-        MemPoolT< sizeof(XMLElemen) > _elementPool;    //
+        MemPoolT< sizeof(XMLElemen) > _elementPool;    //元素内存池
+        MemPoolT< sizeof(XMLAttribute) > _attributePool;    //属性内存池
+        MemPoolT< sizeof(XMLText) > _textPool;    //文本内存池
+        MemPoolT< sizeof(XMLComment) > _commentPool;    //注释内存池
+
+        //错误代码,在源代码中初始化
+        static const char* _errorNames[XML_ERROR_COUNT];
+
+        //拷贝构造和重载函数
+        XMLDocument( const XMLDocument& );
+        void operator=(const XMLDocument& );
+
+        //初始化解析深度
+        void Parse();
+
+        //
 
 
 

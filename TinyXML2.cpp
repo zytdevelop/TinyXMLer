@@ -13,6 +13,32 @@
 #define TIXML_VSNPRINTF    vsnprintf
 
 
+//列表内容必须与'enum XMLError' 匹配
+const char* XMLDocument::_errorNames[XML_ERROR_COUNT] = {
+    "XML_SUCCESS",
+    "XML_NO_ATTRIBUTE",
+    "XML_WRONG_ATTRIBUTE_TYPE",
+    "XML_ERROR_FILE_NOT_FOUND",
+    "XML_ERROR_FILE_COULD_NOT_BE_OPENED",
+    "XML_ERROR_FILE_READ_ERROR",
+    "XML_ERROR_PARSING_ELEMENT",
+    "XML_ERROR_PARSING_ATTRIBUTE",
+    "XML_ERROR_PARSING_TEXT",
+    "XML_ERROR_PARSING_CDATA",
+    "XML_ERROR_PARSING_COMMENT",
+    "XML_ERROR_PARSING_DECLARATION",
+    "XML_ERROR_PARSING_UNKNOWN",
+    "XML_ERROR_EMPTY_DOCUMENT",
+    "XML_ERROR_MISMATCHED_ELEMENT",
+    "XML_ERROR_PARSING",
+    "XML_CAN_NOT_CONVERT_TEXT",
+    "XML_NO_TEXT_NODE",
+    "XML_ELEMENT_DEPTH_EXCEEDED"
+};
+
+
+
+
 static inline int TIXML_VSCPRINTF( const char* format, va_list va)
 {
     int len = vsprintf(0, 0, format, va);
@@ -1506,4 +1532,6 @@ bool XMLElement::ShallowEqual( const XMLNode* compare ) const
     return false;
 }
 
-
+void XMLDocument::Parse()
+{
+    //
