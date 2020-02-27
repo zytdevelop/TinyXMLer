@@ -74,13 +74,14 @@ namespace tinyxml2{
         return returnNode;
     }
 
-    //文档类
+
     //处理空白的方式
     enum Whitespace {
         PERSERVE_WHITESPACE,
         COLLAPSE_WHITESPACE
     };
 
+    //文档类
     class TINYXML2_LIB XMLDocument : public XMLNode{
         friend class XMLElement;
         friend class XMLNode;
@@ -89,7 +90,33 @@ namespace tinyxml2{
         friend class XMLDeclaration;
         friend class XMLUnknown;
     public:
+        //构造和析构函数
+        XMLDocument( bool processEntities = true, Whitespace whitespaceMode = PRESERVE_WHITESPACE );
+        ~XMLDocument();
+
+        //返回文档
+        virtual XMLDocument* ToDocument(){
+            TIXMLASSERT( this == _document );
+            return this;
+        }
+
+        virtual const XMLDocument* ToDocument(){
+            TIXMLASSERT( this == _document );
+            return this;
+        }
+
+        //解析文件
+        XMLError Parse( const char* xml, size_t nBytes=(size_t)(-1) );
+
+        //从磁盘加载XML文件
+        XMLError LoadFile( const char* filename );
+
+        //承接上一个函数,加载文件2
+        XMLError LoadFile( FILE* );
+
         //
+
+
 
 
     private:

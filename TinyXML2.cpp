@@ -1604,5 +1604,113 @@ namespace TinyXML2{
         TIXMLASSERT(——parsingDepth > 0);
         _parsingDepth--;
     }
+
+    //
+    XMLDocument::XMLDocument( bool processEntities, Whitespace WhitespaceMode ):
+    XMLNode( 0 ),
+    _writeBOM( false ),
+    _processEntites( processEntities ),
+    _errorID( XML_SUCCESS ),
+    _whitespaceMode( whitespaceMode ),
+    _errorStr(),
+    _errorLineNum( 0 ),
+    _charBuffer( 0 ),
+    _parseLineNum( 0 ),
+    _parsingDepth( 0 ),
+    _unlinked(),
+    _elementPool(),
+    _attributePool(),
+    _textPool(),
+    _commentPool()
+    {
+        _document = this;
+    }
+
+    XMLDocument::~XMLDocument()
+    {
+        Clear();
+    }
+
+    //
+    XMLError XMLDocument::Parse( const char* p, size_t len )
+    {
+        Clear();
+        //判断字符串长度
+        if( len == 0 || !p || !*p ){
+            SetError( XML_ERROR_EMPTY_DOCUMENT, 0, 0 );
+            return _errorID;
+        }
+        if( len == (size_t)(-1) ){
+            len = strlen( p );
+        }
+
+        //初始化_charBuffer
+        TIXMLASSERT( _charBuffer == 0 );
+        _charBuffer = new char[ len+1 ];
+        //把字符串拷贝到_charBuffer
+        memcpy( _charBuffer, p, len );
+        _charBuffer[len] = 0;
+        //深度解析
+        Parse();
+        //如果报警,则清空内存
+        if( Error() ){
+            DeleteChildren();
+            _elementPool.Clear();
+            _attributePool.Clear();
+            _textPool.Clear();
+            _commentPool.Clear();
+        }
+        return _errorID;
+    }
+
+    //辅助打开文件函数
+    static FILE* callfopen( const char* filepath, const char* mode )
+    {
+        TIXMLASSERT( filepath );
+        TIXMLASEERT( mode );
+        FILE* fp = fopen( filepath, mode );
+        return fp;
+    }
+
+    XMLError XMLDocument::LoadFile( const char* filename )
+    {
+        //检查文件名
+        if( !filename ){
+            TIXMLASEERT( false );
+            SetError( XML_ERROR_FILE_COULD_NOT_BE_OPENED, 0, "filename=<null>" );
+            return errorID;
+        }
+
+        Clear();
+        //打开二进制文件
+        FILE* fp = callfopen( filename, "rb" );
+
+        //加载文件2
+        LoadFile( fp );
+
+        //关闭文件
+        fclose( fp );
+        return _errorID;
+    }
+
+    //两个模板类用来检测文件长度,如果size_t类型大于无符号长类型,则检查是多余的,gcc和clang会发出Wtype-limits警告
+    template<bool = (sizeof(unsigned long) >= sizeof(size_t))>
+    struct LongFitsIntoSizeTMinusOne{
+        static bool Fits( unsigned long value )
+        {
+            return value < (size_t)-1;
+        }
+    };
+
+    template<>
+    struct LongFitsIntoSizeTMinusOne<false>{
+        static bool Fits( unsigned long )
+        {
+            return true;
+        }
+    };
+
+
+
 }
 
