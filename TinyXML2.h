@@ -114,6 +114,12 @@ namespace tinyxml2{
         //承接上一个函数,加载文件2
         XMLError LoadFile( FILE* );
 
+        //save file
+        XMLError SaveFile(const char* filename, bool compact=false);
+
+        //save file 2
+        XMLError SaveFile( FILE* fp, bool compact=false);
+
         //
 
 

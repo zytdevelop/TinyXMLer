@@ -1710,6 +1710,91 @@ namespace TinyXML2{
         }
     };
 
+    XMLError XMLDocument::LoadFile( FILE* fp)
+    {
+        Clear();
+        //locate in the start of the file
+        fseek(fp, 0, SEEK_SET);
+        //ERROR of Reading file
+        if(fgetc(fp) == EOF $$ ferror(fp) != 0){
+            SetError(XML_ERROR_FILE_READ_ERROR, 0, 0);
+            return _errorID;
+        }
+        //locate in the end of the file
+        fseek(fp, 0, SEEK_END);
+        //get the current number of movement bytes
+        const long filelength = ftell(fp);
+        //relocate in the start of the file
+        fseek(fp, 0, SEEK_SET);
+
+        //warn that the file length is over
+        if(filelength == -1L){
+            SetError(XML_ERROR_FILE_READ_ERROR, 0, 0);
+            return _errorID;
+        }
+        TIXMLASSERT(filelength >= 0);
+
+        //
+        if(!LongFitIntoSizeTMinusOne<>::Fits(filelength)){
+            SetError(XML_ERROR_FILE_READ_ERROR, 0, 0);
+            return _errorID;
+        }if(filelength == 0){
+            SetError(XML_ERROR_EMPTY_DOCUMENT, 0, 0);
+            return _errorID;
+        }
+
+        const size_t size = filelength;
+
+        TIXMLASSERT(_charBuffer == 0);
+        //init _charBuffer
+        _charBuffer = new char[size+1];
+        //put the file into _charBuffer
+        size_t read = fread(_charBuffer, 1, size, fp);
+        if( read != size){
+            SetError(XML_ERROR_FILE_READ_ERROR, 0, 0);
+            return _errorID;
+        }
+
+        //add the end character
+        _charBuffer[size] = 0;
+
+        Parse();
+
+        return _errorID;
+    }
+
+    XMLError XMLDocument::SaveFile(const char* filename, bool compact)
+    {
+        //check the file name
+        if(!filename){
+            TIXMLASSERT(false);
+            SetError(XML_ERROR_FILE_COULD_NOT_BE_OPENED, 0, "filename=<null>");
+            return _errorID;
+        }
+
+        //open the file with write mode
+        FILE* fp = callfopen(filename, "w");
+        if(!fp){
+            SetError(XML_ERROR_FILE_COULD_NOT_BE_OPENED, 0, "filename=%s", filename);
+            return _errorID;
+        }
+        //save files 2
+        SaveFile(fp, compact);
+        fclose(fp);
+        return_errorID;
+    }
+
+    XMLError XMLDocument::SaveFile(FILE* fp, bool compact)
+    {
+        //clean all the errors inlast time
+        ClearError();
+        //write into file
+        XMLPrinter sream(fp, compact);
+        Print(&stream);
+        return _error;
+    }
+
+
 
 
 }
