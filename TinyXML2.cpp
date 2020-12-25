@@ -92,7 +92,251 @@ namespace TinyXML2{
     };
 
     //code
+	void StrPair::CollapseWhitespace()
+	{
+		//避免警告
+		TIXMLASSERT(( _flags & NEEDS_DELETE) == 0);
+		//初始化起始位置,忽略空白,调用XMLUtil中SkipWhiteSpace功能
+		_start = XMLUtil::SkipWhiteSpace(_start, 0);
+		
 
+		if( *_start ) {
+			const char* p = _start;    // 读指针
+			char* q = _start;    //写指针
+
+			while( *p ){
+				// 判断是否为空白
+				if( XMLUtil::IsWhiteSpce(*p) ){
+					//跳过空白, 换行
+					p = XMLUtil::SkipWhiteSpace(p, 0);
+					if( *p == 0 ){
+						break;
+					}
+					*q = ' ';
+					++q;
+				}
+				//写入q
+				*q = *p;
+				++q;
+				++p;
+			}
+			//初始化q
+			*q = 0;
+		}
+	}
+
+	void StrPair::Reset()
+	{
+		//标志为删除
+		if( _flag & NEEDS_DELETE ){
+			delete []_start;
+		}
+		//初
+		_flag = 0;
+		_start = 0;
+		_end = 0;
+	}
+
+	void StrPair::SetStr( const char* str, int flags )
+	{
+		TIXMLASSET ( str );
+		Reset();
+		size_t len = strlen( str );
+		TIXMLASSERT( _start == 0 );
+		_start = new char[len+1];
+		memcpy( _start, str, len+1 );
+		_end = _start + len;
+		_flags = flags | NEEDS_DELETE;
+	}
+
+	const char* StrPair::GetStr()
+	{
+		//确定字符不为空
+		TIXMLASSERT( _start );
+		TIXMLASSERT( _end );
+		//规范化类型
+		if( _flags & NEEDS_FLUSH ) {
+			*_end = 0;
+			//标志位取非
+			_flags ^= NEEDS_FLUSH; 
+
+			//标志位不为空
+			if( _flags ){
+				// 读指针
+				const char* p = _start;
+				// 写指针
+				char* q = _start;
+
+				while( p < _end ){
+					// 当p指向回车符, p++, 如果 p+1 指向换行符 p+2
+					if( ( _flags & NEEDS_NEWLINE_NORMALIZATION ) && *p == CR ){
+						if( *(p+1) == LF ){
+							p += 2;
+						}
+						else{
+							++p;
+						}
+						*q = LF;
+						++q;
+					}
+					//当p指向换行符, p+1, 如果 p+1 指向回车符 p+2
+					else if( ( _flags & NEEDS_NEWLINE_NORMALIZATION )&& *p == LF ){
+						if( *(p+1) == CR ){
+							p += 2;
+						}
+						else{
+							++p;
+						}
+						*q = LF;
+						++q;
+					}
+					//当p指向&, 则假设后面为实体,全部读出来
+					else if( ( _flags & NEEDS_ENTITY_PROCESSING) && *p == '&' ){
+						//由tinyXML2处理的实体
+						//实体表中的特殊实体[in/out]
+						//数字字符引用[in] &#20013 或 &#x4e2d
+						if( *(p+1) == '#' ){
+							const int buflen = 10;
+							char buf[buflen] = { 0 };
+							int len = 0;
+							//每次处理十个字符
+							char* adjsted = const_cast<char*>(XMLUtil::GetCharacterRef( p, buf, &len ) );
+							//没有找到实体, ++p
+							if( adjusted == 0 ){
+								*q = *p;
+								++p;
+								++q;
+							}
+							//找到实体, 则拷贝到q中
+							else{
+								TIXMLASSERT( 0<= len && len <= buflen );
+								TIXMLASSERT( q + len <= adjusted );
+								p = adjusted;
+								mencpy( q, buf, len);
+								q += len;
+							}
+
+						}
+						//和默认实体比较
+						else{
+							bool entityFound = false;
+							for( int i = 0; i < NUM_ENTITIES; ++i ){
+								const Entity& entity = entities[i];
+								//发现实体不是默认实体之一, 并且符合实体标准格式则加一个实体
+								if( strncmp( p+1, entity.pattern, entity.length ) == 0 && *(p+entity.length+1) == ';' ){
+									//找到一个新的实体
+									*q = entity.value;
+									++q;
+									p += entity.length + 2;
+									entityFound = true;
+									break;
+								}
+							}
+							if( !entityFound ){
+								++p;
+								++q;
+							}
+						}
+						
+					}
+					//其他情况, 全部按照字符串处理读取到q中
+					else{
+						*q = *p;
+						++p;
+						++q;
+					}
+
+				}
+				*q = 0;
+
+			}
+			//处理空白, 这个模式有待优化
+			if( _flags & NEEDS_WHITESPACE_COLLAPSING ){
+				CollapseWhitespace();
+			}
+			_flags = (_flags & NEEDS_DELETE);
+		}
+		TIXMLASSERT( _start );
+		return _start;
+	}
+
+	char* StrPair::ParseText( char* p, const char* endTag, int strFlags, int* curLineNumPtr )
+	{
+		//确定传入参数不为空
+		TIXMLASSERT( p );
+		TIXMLASSERT( endTag && *endTag );
+		TIXMLASSERT( curLineNumPtr );
+
+		//初始化指针
+		char* start = p; 
+		char endChar = *endTag;
+		size_t length = strlen( endTag );
+
+		//解析文本
+		while( *p ){
+			// *p为结尾字符, 则返回结尾指针
+			if( *p == endChar && strncmp( p, endTag, length ) == 0 ){
+				Set( start, p, strFlags );
+				return p+length;
+			}
+			//*p为换行符, 换行, 解析行数+1
+			else if(*p == '\n'){
+				++(*curLineNumPtr);
+			}
+			++p;
+			TIXMLASSERT( p );
+		}
+		return 0;
+
+	}
+
+	char* StrPair::ParseName( char* p)
+	{
+		//空字符
+		if( !p || !*(p) ){
+			return 0;
+		}
+
+		//不是名称起始字符
+		if( !XMLUtil::IsNameStartChar( *p ) ){
+			return 0;
+		}
+
+		char* const start = p;
+		++p;
+		//解析出完整名称
+		while( *p && XMLUtil::IsNameChar( *p ) ){
+			++p;
+		}
+		//写入p
+		Set( start, p, 0);
+		return p;
+	}
+
+	void StrPair::TransferTo( StrPair* other )
+	{
+		if( this == other ){
+			return;
+		}
+		//确定参数不为空
+		TIXMLASSERT( other != 0);
+		TIXMLASSERT( other->_flags == 0);
+		TIXMLASSERT( other->_start == 0);
+		TIXMLASSERT( other->end == 0);
+
+		other->Reset();
+		//传递
+		other->_flags = _flags;
+		other->_start = _start;
+		other->_end = _end;
+		//重置str
+		_flag = 0;
+		_start = 0;
+		_end = 0;
+
+	}
+
+	
 
     const char* XMLUtil::writeBoolTrue = "true";
     const char* XMLUtil::writeBoolFalse = "false";
