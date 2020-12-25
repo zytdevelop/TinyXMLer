@@ -142,6 +142,112 @@ namespace tinyxml2{
         COLLAPSE_WHITESPACE
     };
 
+	//指针类
+	class TINYXML2_LIB XMLHandle
+	{
+	public:
+		//code
+		//从任何节点（在树的任何深度出）创建,可以空指针
+		explicit XMLHandle( XMLNode* node ) : _node( node ){}
+		//从节点创建
+		explicit XMLHandle( XMLNode& node) : _node( &node ){}
+		//拷贝构造
+		XMLHandle( const XMLHandle& ref ) : _node( ref._node ){}
+
+		//赋值重载
+		XMLHandle& operator=( const XMLHandle& ref )
+		{
+			_node = ref._node;
+			return *this;
+		}
+
+		//第一个子节点
+		XMLHandle FirstChild()
+		{
+			//节点存在则返回, 不存在返回0
+			return XMLHandle( _node ? _node->FirstChild() : 0 ) ;
+		}
+
+		//第一个子元素
+		XMLHandle FirstChildElement( const char* name = 0 )
+		{
+			return XMLHandle( _node ? _node->FirstChildElement( name ) : 0 );
+		}
+
+		//最后子节点
+		XMLHandle LastChild()
+		{
+			return XMLHandle( _node ? _node->LastChild() : 0 );
+		}
+
+		//最后子元素
+		XMLHandle LastChildElement( const char* name = 0)
+		{
+			return XMLHandle( _node ? _node->LastChildElement( name ) : 0 );	
+		}
+
+		//上一个兄弟节点
+		XMLHandle PreviousSibling()
+		{
+			return XMLHandle( _node ? _node->PreviousSibling() : 0 );
+		}
+
+		//上一个兄弟元素
+		XMLHandle PreviouSiblingElement( const char* name = 0 )
+		{
+			return XMLHandle( _node ? _node->PreviouSiblingElement( name) : 0 );
+		}
+
+		// 下一个兄弟节点
+		XMLHandle NextSibling()
+		{
+			return XMLHandle( _node ? _node->NextSibling() : 0 );
+		}
+
+		//下一个兄弟元素
+		XMLHandle NextSiblingElement( const char* name = 0)
+		{
+			return XMLHandle( _node ? _node->NextSiblingElement(name) : 0 )
+		}
+
+		//转换
+		//安全地转换为节点,可以为空
+		XMLNode* ToNode()
+		{
+			return _node;
+		}
+
+		//安全地转换为元素,可以为空
+		XMLElement* ToElement()
+		{
+			return ( _node ? _node->ToElement() : 0 )
+		}
+
+		//转换为文本, 可以为空
+		XMLText* ToText()
+		{
+			return ( _node ? _node->ToText() : 0 );
+		}
+
+		//转换为未知内容,可以为空
+		XMLUnknown* ToUnknown()
+		{
+			return ( _node ? _node->ToUnknown() : 0 );
+		}
+
+		//转换为声明, 可以为空
+		XMLDeclaration* ToDeclaration()
+		{
+			return ( _node ? _node->ToDeclaration() : 0 );
+		}
+
+	
+	private:
+		//code
+		XMLNode* _node;
+
+	}
+
     //文档类
     class TINYXML2_LIB XMLDocument : public XMLNode{
         friend class XMLElement;
