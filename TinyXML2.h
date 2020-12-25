@@ -58,7 +58,68 @@ namespace tinyxml2{
     };
 
     //code
+	class StrPair {
+	public:
+		//code
+		enum {
+			NEEDS_ENTITY_PROCESSING    = 0x01,		//实体处理
+			NEEDS_NEWLINE_NORMALIZATION    = 0x02,		//正常处理
+			NEEDS_WHITESPACE_COLLAPSING    = 0x04,		//空白处理
+			//实体化处理文本元素, 0x03
+			TEXT_ELEMENT    = NEEDS_ENTITY_PROCESSING | NEEDS_NEWLINE_NORMALIZATION,
+			//正常处理文本元素
+			TEXT_ELEMENT_LEAVE_ENTITIES    = NEEDS_NEWLINE_NORMALIZATION,
+			ATTRIBUTE_NAME    = 0,
+			//实体化处理属性值, 0x03
+			ATTRIBUTE_VALUE    = NEEDS_ENTITY_PROCESSING | NEEDS_NEWLINE_NORMALIZATION,
+			//正常处理属性值
+			ATTRIBUTE_VALUE_LEAVE_ENTITIES    = NEEDS_NEWLINE_NORMALIZATION,
+			//正常处理注释
+			COMMENT    = NEEDS_NEWLINE_NORMALIZATION
+		};
+		StrPair(): _flag( 0 ), _start( 0 ), _end( 0 ){}
+		~StrPair(){
+			Reset();
+		}
+		void Set( char* start, char* end, int flags ){
+			TIXMLASSERT( start );
+			TIXMLASSERT( end );
+			Reset();
+			_start = start;
+			_end = end;
+			_flags = flags | NEEDS_FLUSH;
+		}
+		void Reset();
+		void SetInternedStr( const char* str ) {
+			Reset();
+			_start = const_cast<char*>(str);
+		}
 
+		void SetStr( const char* str, int flag=0 );
+
+		const char* GetStr();
+
+		bool Empty() const{
+			return _start == _end;
+		}
+
+		char* ParseText( char* in, const char* endTag, int strFlags, int* curLineNumPtr );
+		char* ParseName( char* in );
+		void TransferTo( StrPair* other );
+
+	private:
+		//code 
+		int    _flag;
+		char*    _start;
+		char*    _end;
+		enum{
+			NEEDS_FLUSH = 0x100,
+			NEEDS_DELETE = 0x200
+		};
+		StrPair( const StrPair& other );
+		void operator=( const StrPair& other );    //不需要实现, 使用TransferTo()代替
+		void CollapseThitespace();
+	};
 
     //节点类型模板类
     template<class NodeType, int PoolElementSize>
