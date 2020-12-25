@@ -248,6 +248,117 @@ namespace tinyxml2{
 
 	}
 
+	//常量指针类
+	class TINYXML_LIB XMLConstHandle
+	{
+	public:
+		//code
+		//从任何节点创建,可以是空指针
+		explicit XMLConstHandle( const XMLNode* node ) : _node( node ){}
+
+		//从节点创建
+		explicit XMLConstHandle( const XMLNode& node ) : _node( &node ){} 
+
+		//拷贝构造
+		XMLConstHandle( const XMLConstHandle& ref ) : _node( ref._node ) {}
+
+		//重载赋值操作符
+		XMLConstHandle& operator=( const XMLConstHand& ref )
+		{
+			_node = ref._node;
+			return *this;
+		}
+		//第一个子节点
+		const XMLConstHandle FirstChild() const
+		{
+			return XMLConstHanle( _node ? _node->FirstChild() : 0 );
+		}
+
+
+		//第一个子元素
+		const XMLConstHandle FirstChildElement( const char* name=0 ) const
+		{
+			return XMLConstHanle( _node ? _node->FirstChildElement( name ) : 0 );
+		}
+
+		//最后一个子节点
+		const XMLConstHandle LastChild() const
+		{
+			return XMLConstHanle( _node ? _node->LastChild() : 0 );
+		}
+
+
+		//最后一个子元素
+		const XMLConstHandle LastChildElement( const char* name=0 ) const
+		{
+			return XMLConstHanle( _node ? _node->LastChildElement( name ) : 0 );
+		}
+
+		//上一个兄弟节点
+		const XMLConstHandle PreviouSibling() const
+		{
+			return XMLConstHanle( _node ? _node->PreviouSibling() : 0 );
+		}
+
+
+		//上一个兄弟元素
+		const XMLConstHandle PreviousSiblingElement( const char* name=0 ) const
+		{
+			return XMLConstHanle( _node ? _node->PreviousSiblingElement( name ) : 0 );
+		}
+
+		//下一个兄弟节点
+		const XMLConstHandle NextSibling() const
+		{
+			return XMLConstHanle( _node ? _node->NextSibling() : 0 );
+		}
+
+
+		//下一个兄弟元素
+		const XMLConstHandle NextSiblingElement( const char* name=0 ) const
+		{
+			return XMLConstHanle( _node ? _node->NextSiblingElement( name ) : 0 );
+		}
+
+		//转换
+		//安全地转换为节点,可以为空
+		XMLNode* ToNode()
+		{
+			return _node;
+		}
+
+		//安全地转换为元素,可以为空
+		XMLElement* ToElement()
+		{
+			return ( _node ? _node->ToElement() : 0 )
+		}
+
+		//转换为文本, 可以为空
+		XMLText* ToText()
+		{
+			return ( _node ? _node->ToText() : 0 );
+		}
+
+		//转换为未知内容,可以为空
+		XMLUnknown* ToUnknown()
+		{
+			return ( _node ? _node->ToUnknown() : 0 );
+		}
+
+		//转换为声明, 可以为空
+		XMLDeclaration* ToDeclaration()
+		{
+			return ( _node ? _node->ToDeclaration() : 0 );
+		}
+
+
+
+	private:
+		//code
+		const XMLNode* _node;
+
+	};
+
     //文档类
     class TINYXML2_LIB XMLDocument : public XMLNode{
         friend class XMLElement;
