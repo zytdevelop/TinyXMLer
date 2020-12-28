@@ -92,6 +92,60 @@ namespace TinyXML2{
     };
 
     //code
+	
+	void XMLPrinter::PrintString(const char* p, bool restricted)
+	{
+		//查找要打印的实体之间的字节
+		const char* q = p;
+		//处理实体
+		if( _processEntities ){
+			const bool* flag = restricted ? _restrictedEntityFlag : _entityFlag;
+			while(*q){
+				TIXMLASSERT( p <= q);
+				if( *q > 0 && *q < ENTITY_RANGE ){
+					//如果检测到实体,则写入实体并继续查找
+					if( flag[(unsigned char)(*q)]){
+						while( p < q ){
+							const size_t delta = q - p;    //增量
+							const int toPrint = ( INT_MAX < delta ) ? INT_MAX : (int)delta;    //打印字节长度
+							Write( p, toPrint );
+							p += toPrint;	
+						}
+
+						//打印实体模型
+						bool entityPatternPrinted = false;
+						for( int i=0; i<NUM_ENTITIES; ++i){
+							if( entities[i].value == *q ){
+								Putc( '&' );
+								Write( entities[i].pattern, entities[i].length );
+								Putc( ';' );
+								entityPatternPrinted = true;
+								break;
+							}
+						}
+						//找不到实体,报错
+						if( !entityPatternPrinted ){
+							TIXMLASSERT( false );
+						}
+						++p;
+
+					}
+				}
+				++q;
+				TIXMLASSERT( p <= q );
+			}
+
+			//写入剩余的字符串,如果找不到实体,则写入整个字符串
+			if( p < q ){
+				const size_t delta = q - p;
+				const int toPrint = ( INT_MAX < delta ) ? INT_MAX : (int)delta;
+				Write(p, toPrint);
+			}
+		}
+		else{
+			Write( p );
+		}
+	}
 	void StrPair::CollapseWhitespace()
 	{
 		//避免警告

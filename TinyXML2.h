@@ -142,6 +142,34 @@ namespace tinyxml2{
         COLLAPSE_WHITESPACE
     };
 
+
+
+	//打印机类
+	class TINYXML2_LIB XMLPrinter : public XMLVisitor
+	{
+	public:
+		//code
+	private:
+		//code
+		bool _firstElement;    // 首元素标记
+		FILE* _fp;    //文件处理
+		int _depth;    //解析深度
+		int _textDepth;    //文本深度
+		bool _processEntities;    //实体处理标记
+		bool _compactMode;    //模式标记
+		enum {
+			ENTITY_RANGE = 64,
+			BUF_SIZE = 200
+		};    //
+		bool _entitiesFlag[ENTITY_RANGE];    //实体标记
+		bool _restrictedEntityFlag[ENTITY_RANGE];    //特定实体标记
+		DynArray<char, 20> _buffer;    //动态缓存区
+		void PrintString(const char*, bool restrictedEntitySet);    //查找需要处理的实体，如果找到则写入文档并继续查找
+	protected:
+		bool _elementJustOpened;    //元素打开标志
+		DynArray<const char*, 10> _stack;    //动态栈
+
+	};
 	//指针类
 	class TINYXML2_LIB XMLHandle
 	{
