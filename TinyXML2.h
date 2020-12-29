@@ -165,11 +165,42 @@ namespace tinyxml2{
 		bool _restrictedEntityFlag[ENTITY_RANGE];    //特定实体标记
 		DynArray<char, 20> _buffer;    //动态缓存区
 		void PrintString(const char*, bool restrictedEntitySet);    //查找需要处理的实体，如果找到则写入文档并继续查找
+		
+		XMLPrinter(const XMLPrinter& );    //拷贝构造
+		XMLPrinter& operator=(const XMLPrinter&);    //重载赋值操作符
 	protected:
 		bool _elementJustOpened;    //元素打开标志
 		DynArray<const char*, 10> _stack;    //动态栈
 
+		//是否以紧凑模式打印
+		virtual bool CompactMode(const XMLElement&){ 
+			return _compactMode;
+		}
+
+		//打印空格,在每个元素之前打印出空格
+		virtual void PrintSpace(int depth);
+
+		//打印,此函数参数不定, 支持打印多个参数
+		void Print(const char* format, ... );
+
+		//写入字符流,辅助文件写入函数
+		void Write(const char* data, size_t size);
+
+		//内联调用
+		inline void Write(const char* data){
+			Write( data, strlen(data));
+		}
+
+		//写入字符
+		void Putc(char ch);
+
+		//密封元素, 在末尾添加XML终止标记
+		void SealElementIfJustOpened();
+
+
 	};
+
+
 	//指针类
 	class TINYXML2_LIB XMLHandle
 	{
