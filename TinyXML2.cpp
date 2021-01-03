@@ -91,7 +91,115 @@ namespace TinyXML2{
         {"gt", 2, '>'}
     };
 
-    //code
+	//applications of the functions
+	
+	XMLPrinter::XMLPrinter(FILE* file, bool compact, int depth):
+	_elementJustOpened(false),
+	_stack(),
+	_firstElement(true),
+	_fp(file),
+	_depth(depth),
+	_textDepth(-1),
+	_processEntities(true),
+	_compactMode(compact),
+	_buffer()
+	{
+		//初始化标记
+		for(int i=0; i<ENTITY_RANGE; ++i){
+			_entityFlag[i] = false;
+			_restrictedEntityFlag[i] = false;
+		}
+
+		//初始化实体
+		for(int i=0; i<NUM_ENTITIES; ++i){
+			const char entityValue = entities[i].value;
+			const unsigned char flagIndex = (unsigned char)entityValue;
+			TIXMLASSERT(flagIndex < ENTITY_RANGE);
+			_entityFlag[flagIndex] = true;
+		}
+		
+		//特定实体标记
+		_restrictedEntityFlag[(unsigned char)'&'] = true;
+		_restrictedEntityFlag[(unsigned char)'<'] = true;
+		_restrictedEntityFlag[(unsigned char)'>'] = true;
+
+		//初始化缓存
+		_buffer.push(0);
+	}
+
+	void XMLPrinter::PrintSpace(int depth)
+	{
+		for(int i=0; i<depth; ++i){
+			Write("    ");
+		}
+	}
+
+	void XMLPrinter::Print(const char* format, ... )
+	{
+		va_list va;    //参数获取列表
+		va_start( va, format );    //指向第一个参数
+
+		//如果打开文件,直接写入
+		if( _fp ){
+			vfprintf( _fp, format, va);
+		}
+		
+		//否则写入缓存
+		else{
+			const int len = TIXML_VSCPRINTF( format, va );
+			//关闭并重新启动va
+			va _end( va );
+			TIXMLASSERT( len >= 0);
+			va_start( va, format );
+			TIXMLASSERT( _buffer.Size() > 0 && _buffer[_buffer.Size() - 1] == 0);
+			//增加终止符
+			char* p = _buffer.PushArr( len ) - 1;
+			//写入p中
+			TIXML_VSNPRINTF( p, len+1, format, va);
+		}
+		va_end( va );
+	}
+
+	void XMLPrinter::Write(const char* data, size_t size)
+	{
+		//如果已打开文件, 直接写入
+		if( _fp ){
+			fwrite(data, sizeof(char), size, _fp);
+		}
+
+		//否则,先存入缓存
+		else{
+			//最后一位是空终止符
+			char* p = _buffer.PushArr( static_cast<int>(size) - 1 );
+			memcpy( p, data, size);
+			p[size] = 0;
+		}
+	}
+
+	void XMLPrinter::Putc(char ch)
+	{
+		//如果文件已打开,直接写入
+		if( _fp ){
+			fputc(ch, _fp);
+		}
+
+		//否则写入缓存
+		else{
+			char*p = _buffer.PushArr(sizeof(char)) - 1;
+			p[0] = ch;
+			p[1] = 0;
+		}
+	}
+
+	void XMLPrinter::SealElementIfJustOpened()
+	{
+		if(!_elementJustOpened){
+			return;
+		}
+		_elementJustOpened = false;
+		Putc( '>' );
+	}
+
 	
 	void XMLPrinter::PrintString(const char* p, bool restricted)
 	{
@@ -146,6 +254,8 @@ namespace TinyXML2{
 			Write( p );
 		}
 	}
+	
+
 	void StrPair::CollapseWhitespace()
 	{
 		//避免警告

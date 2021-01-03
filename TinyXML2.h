@@ -143,12 +143,13 @@ namespace tinyxml2{
     };
 
 
-
 	//打印机类
 	class TINYXML2_LIB XMLPrinter : public XMLVisitor
 	{
 	public:
 		//code
+		XMLPrinter(FILE* file=0, bool compact=false, int depth=0);
+		virtual ~XMLPrinter(){}
 	private:
 		//code
 		bool _firstElement;    // 首元素标记
