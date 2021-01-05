@@ -92,6 +92,41 @@ namespace TinyXML2{
     };
 
 	//applications of the functions
+	//
+	void XMLPrinter::PushAttribute(const char* name, const char* value)
+	{
+		TIXMLASSERT(_elementJustOpened);
+		//添加空格
+		Putc(' ');
+		//写入名称
+		Write(name);
+		//写入'="'
+		Write("=\"");
+		//写入值
+		PrintString(value, false);
+		//写入' " '
+		Putc('\"');
+	}
+
+	void XMLPrinter::PushAttribute(const char* name, int v)
+	{
+	}
+
+	void XMLPrinter::PushAttribute(const char* name, unsigned v)
+	{
+	}
+
+	void XMLPrinter::PushAttribute(const char* name, int64_t v)
+	{
+	}
+
+	void XMLPrinter::PushAttribute(const char* name, bool v)
+	{
+	}
+
+	void XMLPrinter::PushAttribute(const char* name, double v)
+	{
+	}
 	
 	XMLPrinter::XMLPrinter(FILE* file, bool compact, int depth):
 	_elementJustOpened(false),
@@ -158,6 +193,96 @@ namespace TinyXML2{
 			TIXML_VSNPRINTF( p, len+1, format, va);
 		}
 		va_end( va );
+	}
+
+	void XMLPrinter::PushHeader(bool writeBOM, bool writeDec)
+	{
+		//BOM模式, 写入utf-8格式
+		if(writeBOM){
+			static const unsigned char bom[] = {TIXML_UTF_LEAD_0, TIXML_UTF_LEAD1, TTIXML_UTF_LEAD_2, 0};
+			Write(reinterpret_cast<const char*>( bom ));
+		}
+
+		//写入声明
+		if(writeDec){
+			PushDeclaration("xml version=\"1.0\"");
+		}
+	}
+
+	//注释是以"<?"开始, "?>" 结尾
+	void XMLPrinter::PushDeclaration(const char* value)
+	{
+		SealElementIfJustOpened();
+		//检查解析方式
+		if(_textDepth < 0 && !_firstElement && !_compactMode){
+			Putc('\n');
+			PrintSpace(_depth);
+		}
+		_firstElement = false;
+
+		Write("<?");
+		Write(value);
+		Write("?>");
+	}
+	
+	void OpenElement(const char* name, bool compactMode)
+	{
+		//检查是否结尾
+		SealElementIfJustOpened();
+		_stack.Push(name);
+
+		//如果不是第一个元素,换行
+		if(_textDepth < 0 && !_firstElement && !compactMode){
+			Putc('\n');
+		}
+
+		//非紧凑模式,添加空格
+		if(!compactMode){
+			PrintSpace(_depth);
+		}
+
+		//开始编写
+		Write("<");
+		Write(name);
+
+		_elementJustOpened = true;
+		_firstElement = false;
+		++_depth;
+	}
+
+	void XMLPrinter::CloseElement(bool compactMode)
+	{
+		--_depth;
+		const char* name = _stack.Pop();
+
+		//元素已有开始标记,只需要添加结束标记
+		if(_elementJustOpened){
+			Write("/>");
+		}
+
+		//重新写入元素
+		else{
+			//如果解析深度错误,则换行
+			if(_textDepth < 0 && !compactMode){
+				Putc('\n');
+				PrintSpace(_depth);
+			}
+			Write("</");
+			Write(name);
+			Write(">");
+		}
+
+		//文本深度 --
+		if( _textDepth == _depth ){
+			_textDepth = -1;
+		}
+
+		//解析深度为0则换行
+		if( _depth == 0 && !compactMode){
+			Putc('\n');
+		}
+
+		_elementJustOpened = false;
 	}
 
 	void XMLPrinter::Write(const char* data, size_t size)

@@ -148,8 +148,22 @@ namespace tinyxml2{
 	{
 	public:
 		//code
-		XMLPrinter(FILE* file=0, bool compact=false, int depth=0);
-		virtual ~XMLPrinter(){}
+		XMLPrinter(FILE* file=0, bool compact=false, int depth=0);    //构造
+		virtual ~XMLPrinter(){}    //析构
+		void PushHeader(bool writeBOM, bool writeDeclaration);    //
+		void PushDeclaration(const char* value);    //
+		void OpenElement(const char* name, bool compactMode=false);    //添加元素(开始)
+		virtual void CloseElement(bool compactMode=false);    //添加元素(结束标记)
+		void PushAttribute(const char* name, const char* value);    //添加字符类型属性
+		void PushAttribute(const char* name, int value);    //添加整型类型属性
+		void PushAttribute(const char* name, unsigned value);    //添加无符号整型属性
+		void PushAttribute(const char* name, int64_t value);    //添加64位整型属性
+		void PushAttribute(const char* name, bool value);    //添加布尔型属性
+		void PushAttribute(const char* name, double value);    //添加双精度浮点数类型属性
+
+
+
+
 	private:
 		//code
 		bool _firstElement;    // 首元素标记
