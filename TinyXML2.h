@@ -160,6 +160,27 @@ namespace tinyxml2{
 		void PushAttribute(const char* name, int64_t value);    //添加64位整型属性
 		void PushAttribute(const char* name, bool value);    //添加布尔型属性
 		void PushAttribute(const char* name, double value);    //添加双精度浮点数类型属性
+		void PushText(const char* text, bool cdata=false);    //添加字符型文本
+		void PushText(int value);    //添加整型文本
+		void PushText(unsigned value);    //添加无符号整型文本
+		void PushText(int64_t value);    //添加64位整型文本
+		void PushText(bool value);    //添加布尔型文本
+		void PushText(float value);    //添加浮点型文本
+		void PushText(double value);    //添加双精度浮点型文本
+
+		void PushComment(const char* comment);    //添加注释
+
+		void PushUnknown(const char* value);    //添加未知内容
+
+		virtual bool VisitEnter(const XMLDocument&);    //访问文档,进入
+		virtual bool VisitExit(const XMLDocument&)    //访问文档,退出
+		{
+			return true;
+		}
+
+		virtual bool VisitEnter(const XMLElement& element, const XMLAttribute* attribute);    //访问元素,进入
+		virtual bool VisitExit(const XMLElemnt& element);    //访问元素,退出
+
 
 
 

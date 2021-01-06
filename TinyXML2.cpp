@@ -93,6 +93,157 @@ namespace TinyXML2{
 
 	//applications of the functions
 	//
+
+	bool XMLPrinter::VisitEnter()
+	{
+		_processEntities = doc.ProcessEntities();
+		//如果存在utf-8格式
+		if(doc.HasBOM()){
+			PushHeader(true, false);
+		}
+		return true;
+	}
+
+	bool XMLPrinter::VisitEnter(const XMLElement& element, const XMLElement* attribute)
+	{
+		//初始化元素
+		const XMLElement* parentElem = 0;
+		//如果存在元素,获取
+		if(element.Parent()){
+			parentElem = element.Parent()->ToElement();
+		}
+
+		//写入模式
+		const bool compactMode = parentElem ? CompactMode(*parentElem) : _compactMode;
+		//添加元素
+		OpenElement(element.Name(), compactMode);
+
+		//添加元素
+		while(attribute){
+			PushAttribute(attribute->Name(), attribute->Value());
+			attribute = attribute->Next();
+		}
+		return true;
+	}
+
+	bool XMLPrinter::VisitExit(const Element& element)
+	{
+		CloseElement(CompactMode(element));
+		return true;
+	}
+
+	void XMLPrinter::PushComment(const char* comment)
+	{
+		SealElementIfJustOpened();
+		//解析深度小于0需要换行,检查解析方式
+		if(_textDepth < 0 && !_firstElement && !_compactMode){
+			Putc('\n');
+			PrintSpace(_depth);
+		}
+
+		//头元素标记为false
+		_firstElement = false;
+
+		Write("<!--");
+		Write(comment);
+		Write("-->");
+
+
+	}
+
+	void XMLPrinter::PushUnknown(const char* value)
+	{
+		SealElementIfJustOpened();
+		//解析深度小于0需要换行,检查解析方式
+		if(_textDepth < 0 && !_firstElement && !_compactMode){
+			Putc('\n');
+			PrintSpace(_depth);
+		}
+
+		//头元素标记为false
+		_firstElement = false;
+
+		Write("<!");
+		Write(value);
+		Write(">");
+	}
+
+	void XMLPrinter::PushText(const char* text, bool cdata)
+	{
+		_textDepth = _depth-1;
+		SealElementIfJustOpened();
+		//cdata格式
+		if(cdata){
+			Write("<!CDATA[");
+			Write(text);
+			Write("]]>");
+		}
+
+		//其他格式
+		else{
+			PrintString(text, true);
+		}
+	}
+
+	void XMLPrinter::PushText(int value)
+	{
+		char buf[BUF_SIZE];
+		//转换为字符串,下同
+		XMLUtil::ToStr(value, buf, BUF_SIZE);
+		//调用重载函数,下同
+		PushText(buf, false);
+	}
+
+	void XMLPrinter::PushText(unsigned value)
+	{
+		char buf[BUF_SIZE];
+		//转换为字符串,下同
+		XMLUtil::ToStr(value, buf, BUF_SIZE);
+		//调用重载函数,下同
+		PushText(buf, false);
+	
+	}
+
+	void XMLPrinter::PushText(int64_t value)
+	{
+		char buf[BUF_SIZE];
+		//转换为字符串,下同
+		XMLUtil::ToStr(value, buf, BUF_SIZE);
+		//调用重载函数,下同
+		PushText(buf, false);
+	
+	}
+
+	void XMLPrinter::PushText(bool value)
+	{
+		char buf[BUF_SIZE];
+		//转换为字符串,下同
+		XMLUtil::ToStr(value, buf, BUF_SIZE);
+		//调用重载函数,下同
+		PushText(buf, false);
+	
+	}
+
+	void XMLPrinter::PushText(float value)
+	{
+		char buf[BUF_SIZE];
+		//转换为字符串,下同
+		XMLUtil::ToStr(value, buf, BUF_SIZE);
+		//调用重载函数,下同
+		PushText(buf, false);
+	
+	}
+
+	void XMLPrinter::PushText(double value)
+	{
+		char buf[BUF_SIZE];
+		//转换为字符串,下同
+		XMLUtil::ToStr(value, buf, BUF_SIZE);
+		//调用重载函数,下同
+		PushText(buf, false);
+	
+	}
+
 	void XMLPrinter::PushAttribute(const char* name, const char* value)
 	{
 		TIXMLASSERT(_elementJustOpened);
@@ -110,22 +261,42 @@ namespace TinyXML2{
 
 	void XMLPrinter::PushAttribute(const char* name, int v)
 	{
+		char buf[BUF_SIZE];
+		//转换为字符串,下同
+		XMLUtil::ToStr(v, buf, BUF_SIZE);
+		//调用重载函数,下同
+		PushAttribute(name, buf);
 	}
 
 	void XMLPrinter::PushAttribute(const char* name, unsigned v)
 	{
+		char buf[BUF_SIZE];
+		XMLUtil::ToStr(v, buf, BUF_SIZE);
+		PushAttribute(name, buf)
 	}
 
 	void XMLPrinter::PushAttribute(const char* name, int64_t v)
 	{
+		char buf[BUF_SIZE];
+		XMLUtil::ToStr(v, buf, BUF_SIZE);
+		PushAttribute(name, buf)
+
 	}
 
 	void XMLPrinter::PushAttribute(const char* name, bool v)
 	{
+		char buf[BUF_SIZE];
+		XMLUtil::ToStr(v, buf, BUF_SIZE);
+		PushAttribute(name, buf)
+
 	}
 
 	void XMLPrinter::PushAttribute(const char* name, double v)
 	{
+		char buf[BUF_SIZE];
+		XMLUtil::ToStr(v, buf, BUF_SIZE);
+		PushAttribute(name, buf)
+
 	}
 	
 	XMLPrinter::XMLPrinter(FILE* file, bool compact, int depth):
