@@ -147,19 +147,21 @@ namespace tinyxml2{
 	class TINYXML2_LIB XMLPrinter : public XMLVisitor
 	{
 	public:
-		//code
+		//
 		XMLPrinter(FILE* file=0, bool compact=false, int depth=0);    //构造
 		virtual ~XMLPrinter(){}    //析构
 		void PushHeader(bool writeBOM, bool writeDeclaration);    //
 		void PushDeclaration(const char* value);    //
 		void OpenElement(const char* name, bool compactMode=false);    //添加元素(开始)
 		virtual void CloseElement(bool compactMode=false);    //添加元素(结束标记)
+		//添加属性
 		void PushAttribute(const char* name, const char* value);    //添加字符类型属性
 		void PushAttribute(const char* name, int value);    //添加整型类型属性
 		void PushAttribute(const char* name, unsigned value);    //添加无符号整型属性
 		void PushAttribute(const char* name, int64_t value);    //添加64位整型属性
 		void PushAttribute(const char* name, bool value);    //添加布尔型属性
 		void PushAttribute(const char* name, double value);    //添加双精度浮点数类型属性
+		//添加不同类型文本
 		void PushText(const char* text, bool cdata=false);    //添加字符型文本
 		void PushText(int value);    //添加整型文本
 		void PushText(unsigned value);    //添加无符号整型文本
@@ -167,21 +169,37 @@ namespace tinyxml2{
 		void PushText(bool value);    //添加布尔型文本
 		void PushText(float value);    //添加浮点型文本
 		void PushText(double value);    //添加双精度浮点型文本
-
 		void PushComment(const char* comment);    //添加注释
-
 		void PushUnknown(const char* value);    //添加未知内容
 
-		virtual bool VisitEnter(const XMLDocument&);    //访问文档,进入
-		virtual bool VisitExit(const XMLDocument&)    //访问文档,退出
+		//访问文档
+		virtual bool VisitEnter(const XMLDocument&);    //进入
+		virtual bool VisitExit(const XMLDocument&)    //退出
 		{
 			return true;
 		}
 
-		virtual bool VisitEnter(const XMLElement& element, const XMLAttribute* attribute);    //访问元素,进入
-		virtual bool VisitExit(const XMLElemnt& element);    //访问元素,退出
+		//访问元素
+		virtual bool VisitEnter(const XMLElement& element, const XMLAttribute* attribute);    //进入
+		virtual bool VisitExit(const XMLElemnt& element);    //退出
 
+		//访问接口
+		virtual bool Visit(const XMLText& text);    //访问文本
+		virtual bool Visit(const XMLComment& comment);    //访问注释
+		virtual bool Visit(const XMLDeclaration& declaration);    //访问声明
+		virtual bool Visit(const XMLUnknown& unknown);    //访问未知内容
 
+		//缓存指针
+		const char* CStr() const{
+			return _buffer.Mem();
+		}
+
+		//清空缓存
+		void ClearBuffer(){
+			_buffer.Clear();
+			_buffer.Push(0);
+			_firstElement = true;
+		}
 
 
 

@@ -94,6 +94,30 @@ namespace TinyXML2{
 	//applications of the functions
 	//
 
+	bool XMLPrinter::Visit(const XMLText& text)
+	{
+		//调用接口,下同
+		PushText(text.Value(), text.CData());
+		return true;
+	}
+
+	bool XMLPrinter::Visit(const XMLComment& comment)
+	{
+		PushComment(comment.Value());
+	}
+
+	bool XMLPrinter::Visit(const XMLDeclaration& declaration)
+	{
+		PushDeclaration(declaration.Value());
+		return true;
+	}
+
+	bool XMLPrinter::Visit(const XMLUnknown& unknown)
+	{
+		PushUnknown(unknown.Value());
+		return true;
+	}
+
 	bool XMLPrinter::VisitEnter()
 	{
 		_processEntities = doc.ProcessEntities();
