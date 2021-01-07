@@ -1,4 +1,4 @@
-#include "tinyxml2.h"
+#include "TinyXML2.h"
 
 #include <new>					//管理动态存储
 #include <cstddef>				//隐式表达类型
